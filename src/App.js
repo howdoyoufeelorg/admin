@@ -6,6 +6,8 @@ import { authProvider } from "./authProvider";
 import ResourceGuesser from "@api-platform/admin/lib/ResourceGuesser";
 import {UsersList} from "./UsersList";
 import {QuestionCreate, QuestionEdit, QuestionsList} from "./QuestionsAdmin";
+import {QuestionLabelCreate, QuestionLabelEdit} from "./QuestionLabelsAdmin";
+import {Resource} from "react-admin";
 
 const entrypoint = process.env.REACT_APP_API_HOST + '/api';
 const fetchHeaders = { Authorization: `Bearer ${window.localStorage.getItem("token")}` };
@@ -52,6 +54,8 @@ export default () => (
 
         <ResourceGuesser name="instructions" />
         <ResourceGuesser name="questions" list={QuestionsList} create={QuestionCreate} edit={QuestionEdit} />
+        <ResourceGuesser name="question_labels" create={QuestionLabelCreate} edit={QuestionLabelEdit} />
+        <ResourceGuesser name="additional_data_labels" create={QuestionLabelCreate} edit={QuestionLabelEdit} />
         <ResourceGuesser name="areas" />
         <ResourceGuesser name="users" list={UsersList}/>
     </HydraAdmin>
