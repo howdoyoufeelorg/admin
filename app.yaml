@@ -1,3 +1,4 @@
+service: hdyf-admin
 runtime: nodejs
 env: flex
 
