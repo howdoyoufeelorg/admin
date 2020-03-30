@@ -6,7 +6,7 @@ RUN mkdir -p /app
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
+COPY package.json ./
 RUN yarn
 
 EXPOSE 3000

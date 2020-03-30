@@ -4,8 +4,8 @@ import React from "react";
 
 export const UsersList = props => (
     <ListGuesser {...props}>
+        <FieldGuesser source="email" />
         <FieldGuesser source="firstname" />
-        <FieldGuesser source="middlename" />
         <FieldGuesser source="lastname" />
     </ListGuesser>
 );

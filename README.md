@@ -1,3 +1,19 @@
+HowDoYouFeel.org - ADMIN component
+=========================
+
+ADMIN for HowDoYouFeel.org - works in conjunction with other components of the project, 
+but it can be developed and used on it's own. Based on React, react-admin, and api-project. 
+
+For api-project admin, see documentation at.
+https://api-platform.com/
+
+For react-admin, 
+https://marmelab.com/en/
+
+
+
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
