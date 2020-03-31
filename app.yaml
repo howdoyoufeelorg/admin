@@ -1,11 +1,20 @@
 service: hdyf-admin
-runtime: nodejs
+runtime: nodejs12
 env: flex
 
 env_variables:
     REACT_APP_API_HOST: https://hdyf-api-dot-m-app-3.appspot.com
 
 handlers:
+    - url: /static/js/(.*)
+      static_files: build/static/js/\1
+      upload: build/static/js/(.*)
+    - url: /static/css/(.*)
+      static_files: build/static/css/\1
+      upload: build/static/css/(.*)
+    - url: /static/media/(.*)
+      static_files: build/static/media/\1
+      upload: build/static/media/(.*)
     - url: /(.*\.(json|ico|png))$
       static_files: build/\1
       upload: build/.*\.(json|ico|png)$
