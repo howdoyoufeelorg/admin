@@ -2,6 +2,9 @@ service: hdyf-admin
 runtime: nodejs
 env: flex
 
+env_variables:
+    REACT_APP_API_HOST: https://hdyf-api-dot-m-app-3.appspot.com
+
 # This sample incurs costs to run on the App Engine flexible environment.
 # The settings below are to reduce costs during testing and are not appropriate
 # for production use. For more information, see:
