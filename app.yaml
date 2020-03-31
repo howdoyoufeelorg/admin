@@ -5,6 +5,17 @@ env: flex
 env_variables:
     REACT_APP_API_HOST: https://hdyf-api-dot-m-app-3.appspot.com
 
+handlers:
+    - url: /(.*\.(json|ico|png))$
+      static_files: build/\1
+      upload: build/.*\.(json|ico|png)$
+    - url: /
+      static_files: build/index.html
+      upload: build/index.html
+    - url: /.*
+      static_files: build/index.html
+      upload: build/index.html
+
 # This sample incurs costs to run on the App Engine flexible environment.
 # The settings below are to reduce costs during testing and are not appropriate
 # for production use. For more information, see:
