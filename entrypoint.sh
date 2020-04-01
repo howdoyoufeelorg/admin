@@ -2,4 +2,4 @@
 #
 # Activate the dev server
 cd /app
-yarn start
+yarn local
