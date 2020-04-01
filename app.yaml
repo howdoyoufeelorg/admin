@@ -1,5 +1,5 @@
 service: hdyf-admin
-runtime: nodejs12
+runtime: nodejs
 env: flex
 
 env_variables:
