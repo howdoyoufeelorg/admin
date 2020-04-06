@@ -10,7 +10,7 @@ const inviteUserProviderDecorator = dataProvider => (verb, resource, params) => 
     // You can replace this with a customized fetch call to your own API route, too
     if (resource === "invite_user") {
         if (verb === GET_ONE) {
-            return Promise.resolve({data: {id: params.id, email: ""},});
+            return Promise.resolve({data: {id: params.id},});
         }
         if (verb === UPDATE) {
             fetch(entrypoint + "/users/process-invite", {

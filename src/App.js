@@ -29,8 +29,11 @@ export default () => {
             <ResourceGuesser name="questions" list={QuestionsList} create={QuestionCreate} edit={QuestionEdit} />
             <ResourceGuesser name="question_labels" create={QuestionLabelCreate} edit={QuestionLabelEdit} />
             <ResourceGuesser name="additional_data_labels" create={QuestionLabelCreate} edit={QuestionLabelEdit} />
-            <ResourceGuesser name="areas" />
             <ResourceGuesser name="users" list={UsersList}/>
+            <Resource name="countries" />
+            <Resource name="states" />
+            <Resource name="areas" />
+            {/* Custom resources (not in API) */}
             <Resource name="invite_user" />
         </HydraAdmin>
     )
