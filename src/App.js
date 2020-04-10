@@ -10,6 +10,12 @@ import {QuestionLabelCreate, QuestionLabelEdit} from "./QuestionLabelsAdmin";
 import {Resource, useDataProvider} from "react-admin";
 import inviteUser from './inviteUser';
 import HdyfLayout from './layout/HdyfLayout';
+import {
+    InstructionsCreate,
+    InstructionsEdit,
+    InstructionsList,
+    InstructionsShow
+} from "./ResourceElements/InstructionsAdmin";
 
 const customRoutes = [
     <Route key="invite_user" path="/invite-user" component={inviteUser.edit} />
@@ -24,8 +30,7 @@ export default () => {
             customRoutes={customRoutes}
             layout={HdyfLayout}
         >
-
-            <ResourceGuesser name="instructions" />
+            <Resource name="instructions" list={InstructionsList} show={InstructionsShow} create={InstructionsCreate} edit={InstructionsEdit} />
             <ResourceGuesser name="questions" list={QuestionsList} create={QuestionCreate} edit={QuestionEdit} />
             <ResourceGuesser name="question_labels" create={QuestionLabelCreate} edit={QuestionLabelEdit} />
             <ResourceGuesser name="additional_data_labels" create={QuestionLabelCreate} edit={QuestionLabelEdit} />
@@ -33,6 +38,7 @@ export default () => {
             <Resource name="countries" />
             <Resource name="states" />
             <Resource name="areas" />
+            <Resource name="instruction_contents" />
             {/* Custom resources (not in API) */}
             <Resource name="invite_user" />
         </HydraAdmin>

@@ -47,6 +47,7 @@ const reactAdminDocumentsCache = new Map();
  * @param {Object} document
  * @param {bool} clone
  * @param {bool} addToCache
+ * @param {bool} doNotRemoveValues
  *
  * @return {ReactAdminDocument}
  */
@@ -54,6 +55,7 @@ export const transformJsonLdDocumentToReactAdminDocument = (
     document,
     clone = true,
     addToCache = true,
+    doNotRemoveValues = false,
 ) => {
     if (clone) {
         // deep clone documents
@@ -97,7 +99,7 @@ export const transformJsonLdDocumentToReactAdminDocument = (
                         ] = transformJsonLdDocumentToReactAdminDocument(obj, false, false);
                 }
 
-                return obj['@id'];
+                return doNotRemoveValues ? obj : obj['@id'];
             });
         }
     });
@@ -372,7 +374,7 @@ export default (
 
             default:
                 return Promise.resolve(
-                    transformJsonLdDocumentToReactAdminDocument(response.json),
+                    transformJsonLdDocumentToReactAdminDocument(response.json, true, true, resource === 'instructions'),
                 )
                     .then(data => convertHydraDataToReactAdminData(resource, data))
                     .then(data => ({ data }));

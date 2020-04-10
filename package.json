@@ -18,6 +18,7 @@
     "immutable": "^4.0.0-rc.12",
     "jwt-decode": "^2.2.0",
     "node-sass": "^4.13.1",
+    "ra-input-rich-text": "^3.3.1",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-scripts": "3.4.0",

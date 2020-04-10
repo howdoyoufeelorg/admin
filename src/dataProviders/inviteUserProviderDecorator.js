@@ -1,13 +1,8 @@
 import { GET_ONE, UPDATE } from "react-admin";
-import {fetchHydra as baseFetchHydra} from "@api-platform/admin";
 
 const entrypoint = process.env.REACT_APP_API_HOST;
 
-// A function decorating a dataProvider for handling user profiles
 const inviteUserProviderDecorator = dataProvider => (verb, resource, params) => {
-    // I know I only GET or UPDATE the profile as there is only one for the current user
-    // To showcase how I can do something completely different here, I'll store it in local storage
-    // You can replace this with a customized fetch call to your own API route, too
     if (resource === "invite_user") {
         if (verb === GET_ONE) {
             return Promise.resolve({data: {id: params.id},});
