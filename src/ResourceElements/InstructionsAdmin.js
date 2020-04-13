@@ -1,6 +1,8 @@
 import {Show, Create, List, Edit, ReferenceField, TextField, ReferenceManyField, SingleFieldList, ReferenceInput, TextInput, SelectInput,
-    ArrayInput, SimpleFormIterator, required, SimpleForm, SimpleShowLayout, Datagrid, ShowButton, EditButton, ReferenceArrayInput} from "react-admin";
-import React, { useState } from "react";
+    ArrayInput, SimpleFormIterator, required, SimpleForm, SimpleShowLayout, Datagrid, ShowButton, EditButton, FormDataConsumer, useDataProvider
+} from "react-admin";
+import {useFormState} from "react-final-form";
+import React, { useState, useEffect } from "react";
 import { InstructionContentField } from "../Components/InstructionContent";
 import RichTextInput from 'ra-input-rich-text';
 
@@ -61,19 +63,65 @@ const languageOptions = [
     {id: 'es', name: 'Espanol'},
 ];
 
-export const InstructionsCreate = props => (
-    <Create {...props} >
-        <SimpleForm redirect="list">
+const validateLocation = (values) => {
+    const errors = {};
+    if (!values.area && !values.state && !values.country ) {
+        errors.area = ['You must select Country, Area or State!'];
+    }
+    return errors;
+};
+
+const StateSelector = props => {
+    const { values: {country} } = useFormState();
+    const dataProvider = useDataProvider();
+    const [choices, setChoices] = useState([]);
+    useEffect(() => {
+        if(country) {
+            dataProvider.getOne('countries', {id: country})
+                .then(({data: {states}}) => {
+                    dataProvider.getMany('states', {ids: states}).then(
+                        ({data}) => setChoices(data)
+                    )
+                })
+                .catch(error => {})
+        }
+    }, [country]);
+    return(<SelectInput
+        choices={choices}
+        {...props}
+    />)
+}
+
+const AreaSelector = props => {
+    const { values: {state} } = useFormState();
+    const dataProvider = useDataProvider();
+    const [choices, setChoices] = useState([]);
+    useEffect(() => {
+        if(state) {
+            dataProvider.getOne('states', {id: state})
+                .then(({data: {areas}}) => {
+                    dataProvider.getMany('areas', {ids: areas}).then(
+                        ({data}) => setChoices(data)
+                    )
+                })
+                .catch(error => {})
+        }
+    }, [state]);
+    return(<SelectInput
+        choices={choices}
+        {...props}
+    />)
+};
+
+export const InstructionsCreate = props => {
+    return(<Create {...props}>
+        <SimpleForm redirect="list" validate={validateLocation}>
             <ReferenceInput label="Country" source="country" reference="countries">
                 <SelectInput optionText="name" allowEmpty />
             </ReferenceInput>
-            <ReferenceInput label="State" source="state" reference="states">
-                <SelectInput optionText="name" allowEmpty />
-            </ReferenceInput>
-            <ReferenceInput label="Area" source="area" reference="areas">
-                <SelectInput optionText="name" allowEmpty />
-            </ReferenceInput>
-            <TextInput source="zipcode" validate={required()}/>
+            <StateSelector source="state"/>
+            <AreaSelector source="area"/>
+            <TextInput source="zipcode"/>
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
             <ArrayInput source="contents">
                 <SimpleFormIterator>
@@ -83,11 +131,11 @@ export const InstructionsCreate = props => (
             </ArrayInput>
         </SimpleForm>
     </Create>
-);
+)};
 
 export const InstructionsEdit = props => {
     return (<Edit {...props} >
-        <SimpleForm redirect="list">
+        <SimpleForm redirect="list" validate={validateLocation}>
             <ReferenceInput label="Country" source="country" reference="countries">
                 <SelectInput optionText="name" allowEmpty />
             </ReferenceInput>
@@ -97,7 +145,7 @@ export const InstructionsEdit = props => {
             <ReferenceInput label="Area" source="area" reference="areas">
                 <SelectInput optionText="name" allowEmpty />
             </ReferenceInput>
-            <TextInput source="zipcode" validate={required()}/>
+            <TextInput source="zipcode" />
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
             <ArrayInput source="contents">
                 <SimpleFormIterator>
