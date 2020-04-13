@@ -1,5 +1,19 @@
 import decodeJwt from 'jwt-decode';
 
+const localStorageItems = [
+    'token',
+    'expires',
+    'roles',
+    'id'
+];
+const localStorageSet = (data) => {
+    localStorageItems.forEach(item => localStorage.setItem(item, data[item]));
+};
+const localStorageClear = () => {
+    localStorageItems.forEach(item => localStorage.removeItem(item));
+};
+
+
 const login_uri = process.env.REACT_APP_API_HOST + '/authentication_token';
 export const authProvider = {
     login: ({ username, password }) =>  {
@@ -17,24 +31,21 @@ export const authProvider = {
             })
             .then(({ token }) => {
                 const decodedToken = decodeJwt(token);
-                localStorage.setItem('token', token);
-                localStorage.setItem('roles', decodedToken.roles);
-                localStorage.setItem('expires', decodedToken.exp);
+                localStorageSet({
+                    token,
+                    ...decodedToken
+                })
             });
     },
     logout: () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('roles');
-        localStorage.removeItem('expires');
+        localStorageClear();
         return Promise.resolve();
     },
     checkAuth: () => localStorage.getItem('token') ? Promise.resolve() : Promise.reject(),
     checkError: (error) => {
         const status = error.status;
         if (status === 401 || status === 403) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('roles');
-            localStorage.removeItem('expires');
+            localStorageClear();
             return Promise.reject();
         }
         return Promise.resolve();

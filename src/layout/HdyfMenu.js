@@ -8,7 +8,7 @@ import classnames from 'classnames';
 import inflection from 'inflection';
 import { getResources, useTranslate, Translate, ReduxState } from 'ra-core';
 import { DashboardMenuItem, MenuItemLink } from 'ra-ui-materialui';
-import LabelIcon from '@material-ui/icons/Label';
+import {isAdmin} from "../utils";
 
 const useStyles = makeStyles(
     {
@@ -80,13 +80,13 @@ const Menu = (props) => {
                         sidebarIsOpen={open}
                     />
                 ))}
-            <MenuItemLink
+            {isAdmin() ? <MenuItemLink
                 to="/invite-user"
                 primaryText="Invite User"
                 leftIcon={<UserIcon />}
                 onClick={onMenuClick}
                 sidebarIsOpen={open}
-            />
+            /> : null}
             {isXSmall && logout}
         </div>
     );

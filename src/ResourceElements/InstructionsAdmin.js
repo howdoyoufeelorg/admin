@@ -1,14 +1,18 @@
 import {Show, Create, List, Edit, ReferenceField, TextField, ReferenceManyField, SingleFieldList, ReferenceInput, TextInput, SelectInput,
-    ArrayInput, SimpleFormIterator, required, SimpleForm, SimpleShowLayout, Datagrid, ShowButton, EditButton, FormDataConsumer, useDataProvider
+    ArrayInput, SimpleFormIterator, required, SimpleForm, SimpleShowLayout, Datagrid, ShowButton, EditButton, useDataProvider,
+    DateField
 } from "react-admin";
 import {useFormState} from "react-final-form";
 import React, { useState, useEffect } from "react";
 import { InstructionContentField } from "../Components/InstructionContent";
 import RichTextInput from 'ra-input-rich-text';
+import {isAdmin} from "../utils";
 
 export const InstructionsList = props => (
-    <List {...props}>
+    <List {...props} sort={{ field: 'updatedAt', order: 'DESC' }}>
         <Datagrid>
+            <DateField label="Created" source="createdAt" />
+            <DateField label="Updated" source="updatedAt" />
             <ReferenceField label="Country" source="country" reference="countries">
                 <TextField source="name" />
             </ReferenceField>
@@ -71,56 +75,112 @@ const validateLocation = (values) => {
     return errors;
 };
 
-const StateSelector = props => {
-    const { values: {country} } = useFormState();
-    const dataProvider = useDataProvider();
-    const [choices, setChoices] = useState([]);
-    useEffect(() => {
-        if(country) {
-            dataProvider.getOne('countries', {id: country})
-                .then(({data: {states}}) => {
-                    dataProvider.getMany('states', {ids: states}).then(
-                        ({data}) => setChoices(data)
-                    )
-                })
-                .catch(error => {})
-        }
-    }, [country]);
-    return(<SelectInput
-        choices={choices}
-        {...props}
-    />)
-}
-
-const AreaSelector = props => {
-    const { values: {state} } = useFormState();
-    const dataProvider = useDataProvider();
-    const [choices, setChoices] = useState([]);
-    useEffect(() => {
-        if(state) {
-            dataProvider.getOne('states', {id: state})
-                .then(({data: {areas}}) => {
-                    dataProvider.getMany('areas', {ids: areas}).then(
-                        ({data}) => setChoices(data)
-                    )
-                })
-                .catch(error => {})
-        }
-    }, [state]);
-    return(<SelectInput
-        choices={choices}
-        {...props}
-    />)
+const CountrySelector = props => {
+    const {allowedCountries, ...rest} = props;
+    if(!allowedCountries.length) return null;
+    return (
+        <ReferenceInput label="Country" source="country" reference="countries" filter={{ id: allowedCountries}}>
+            <SelectInput optionText="name" allowEmpty/>
+        </ReferenceInput>
+    )
 };
 
-export const InstructionsCreate = props => {
+const StateSelector = ({allowedStates, ...rest}) => {
+    const [choices, setChoices] = useState([]);
+    const {values: {country}} = useFormState();
+    const dataProvider = useDataProvider();
+    useEffect(() => {
+        if(allowedStates !== 'all' && allowedStates.length) {
+            dataProvider.getMany('states', {ids: allowedStates}).then(
+                ({data}) => setChoices(data)
+            )
+        } else {
+            if (country) {
+                dataProvider.getOne('countries', {id: country})
+                    .then(({data: {states}}) => {
+                        dataProvider.getMany('states', {ids: states}).then(
+                            ({data}) => setChoices(data)
+                        )
+                    })
+                    .catch(error => {
+                    })
+            }
+        }
+    }, [country, allowedStates]);
+    if(allowedStates !== 'all' && !allowedStates.length) return null;
+    return(<SelectInput choices={choices} {...rest} />)
+};
+
+const AreaSelector = ({allowedAreas, ...rest}) => {
+    const [choices, setChoices] = useState([]);
+    const { values: {state} } = useFormState();
+    const dataProvider = useDataProvider();
+    useEffect(() => {
+        if(allowedAreas !== 'all' && !allowedAreas.length) {
+            dataProvider.getMany('areas', {ids: allowedAreas}).then(
+                ({data}) => setChoices(data)
+            )
+        } else {
+            if (state) {
+                dataProvider.getOne('states', {id: state})
+                    .then(({data: {areas}}) => {
+                        dataProvider.getMany('areas', {ids: areas}).then(
+                            ({data}) => setChoices(data)
+                        )
+                    })
+                    .catch(error => {
+                    })
+            }
+        }
+    }, [state, allowedAreas]);
+    if(allowedAreas !== 'all' && !allowedAreas.length) return null;
+    return(<SelectInput choices={choices} {...rest} />)
+};
+
+export const InstructionsCreate = ({ permissions, ...props }) => {
+    const dataProvider = useDataProvider();
+    const admin = isAdmin(permissions);
+    const [allowedCountries, setAllowedCountries] = useState([]);
+    const [allowedStates, setAllowedStates] = useState([]);
+    const [allowedAreas, setAllowedAreas] = useState([]);
+    const [initialValues, setInitialValues] = useState({country: null, state: null, area: null});
+    useEffect(() => {
+        dataProvider.getOne('users', {id: 'api/users/'+localStorage.getItem('id')})
+            .then(({data}) => {
+                setAllowedCountries(data.countries);
+                setAllowedStates(data.states);
+                setAllowedAreas(data.areas);
+            })
+            .catch(error => {})
+    }, []);
+    if(allowedCountries.length === 1 && initialValues.country === null) {
+        setInitialValues(Object.assign({}, initialValues, {country: allowedCountries[0]}));
+    }
+    if(allowedStates.length === 1 && initialValues.state === null) {
+        setInitialValues(Object.assign({}, initialValues, {state: allowedStates[0]}));
+    }
+    if(allowedAreas.length === 1 && initialValues.area === null) {
+        setInitialValues(Object.assign({}, initialValues, {area: allowedAreas[0]}));
+    }
     return(<Create {...props}>
-        <SimpleForm redirect="list" validate={validateLocation}>
-            <ReferenceInput label="Country" source="country" reference="countries">
-                <SelectInput optionText="name" allowEmpty />
-            </ReferenceInput>
-            <StateSelector source="state"/>
-            <AreaSelector source="area"/>
+        <SimpleForm redirect="list" validate={validateLocation} initialValues={initialValues}>
+            {admin ?
+                <ReferenceInput label="Country" source="country" reference="countries">
+                    <SelectInput optionText="name" allowEmpty/>
+                </ReferenceInput>
+                :
+                <CountrySelector allowedCountries={allowedCountries} />
+            }
+            {admin ?
+                <StateSelector source="state" allowedStates="all"/>
+                :
+                allowedStates.length > 1 ? <StateSelector source="state" allowedStates={allowedStates}/> : null
+            }
+            {admin ?
+                <AreaSelector source="area" allowedAreas="all"/>
+                :
+                allowedAreas.length > 1 ? <AreaSelector source="area" allowedAreas={allowedAreas}/> : null
+            }
             <TextInput source="zipcode"/>
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
             <ArrayInput source="contents">
@@ -133,18 +193,40 @@ export const InstructionsCreate = props => {
     </Create>
 )};
 
-export const InstructionsEdit = props => {
+export const InstructionsEdit = ({ permissions, ...props }) => {
+    const dataProvider = useDataProvider();
+    const admin = isAdmin(permissions);
+    const [allowedCountries, setAllowedCountries] = useState([]);
+    const [allowedStates, setAllowedStates] = useState([]);
+    const [allowedAreas, setAllowedAreas] = useState([]);
+    useEffect(() => {
+        dataProvider.getOne('users', {id: 'api/users/'+localStorage.getItem('id')})
+            .then(({data}) => {
+                setAllowedCountries(data.countries);
+                setAllowedStates(data.states);
+                setAllowedAreas(data.areas);
+            })
+            .catch(error => {})
+    }, []);
     return (<Edit {...props} >
         <SimpleForm redirect="list" validate={validateLocation}>
-            <ReferenceInput label="Country" source="country" reference="countries">
-                <SelectInput optionText="name" allowEmpty />
-            </ReferenceInput>
-            <ReferenceInput label="State" source="state" reference="states">
-                <SelectInput optionText="name" allowEmpty />
-            </ReferenceInput>
-            <ReferenceInput label="Area" source="area" reference="areas">
-                <SelectInput optionText="name" allowEmpty />
-            </ReferenceInput>
+            {admin ?
+                <ReferenceInput label="Country" source="country" reference="countries">
+                    <SelectInput optionText="name" allowEmpty/>
+                </ReferenceInput>
+                :
+                <CountrySelector allowedCountries={allowedCountries} />
+            }
+            {admin ?
+                <StateSelector source="state" allowedStates="all"/>
+                :
+                allowedStates.length > 1 ? <StateSelector source="state" allowedStates={allowedStates}/> : null
+            }
+            {admin ?
+                <AreaSelector source="area" allowedAreas="all"/>
+                :
+                allowedAreas.length > 1 ? <AreaSelector source="area" allowedAreas={allowedAreas}/> : null
+            }
             <TextInput source="zipcode" />
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
             <ArrayInput source="contents">

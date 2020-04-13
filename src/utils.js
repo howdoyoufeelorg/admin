@@ -14,3 +14,25 @@ export const StringArrayToObject = (props) => {
         ...rest,
     })
 }
+
+export const isAdmin = (role = '') => {
+    if(!role) {
+        const roles = localStorage.getItem('roles');
+        if(roles) {
+            const rolesArray = roles.split(',');
+            role = rolesArray[0];
+        }
+    }
+    return (role === 'ROLE_SUPERADMIN' || role === 'ROLE_ADMIN');
+}
+
+export const isSuperadmin = (role = '') => {
+    if(!role) {
+        const roles = localStorage.getItem('roles');
+        if(roles) {
+            const rolesArray = roles.split(',');
+            role = rolesArray[0];
+        }
+    }
+    return (role === 'ROLE_SUPERADMIN');
+}
