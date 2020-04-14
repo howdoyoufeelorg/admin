@@ -1,6 +1,8 @@
 import React from "react";
 import {SelectInput, ReferenceArrayInput, SelectArrayInput, List, Datagrid, TextField, Show, SimpleShowLayout, Create, SimpleForm, Edit, NumberInput,
     BooleanInput, ArrayInput, SimpleFormIterator, required, ShowButton, EditButton, ReferenceField, FormDataConsumer, TextInput} from "react-admin";
+import {languageOptions, getUnusedLanguage} from "../language"
+
 
 export const QuestionsList = props => (
     <List {...props} sort={{ field: 'questionWeight', order: 'DESC' }}>
@@ -67,23 +69,27 @@ export const QuestionCreate = props => (
     </Create>
 )
 
-const languageOptions = [
-    {id: 'en', name: 'US English'},
-    {id: 'es', name: 'Espanol'},
-];
-
 export const QuestionEdit = props => (
     <Edit {...props}>
         <SimpleForm redirect="list">
             <NumberInput source="questionWeight" />
             <SelectInput source="type" choices={inputChoices} />
             <TextInput source="description" />
-            <ArrayInput source="labels">
-                <SimpleFormIterator>
-                    <SelectInput label="Language" source="language" choices={languageOptions} validate={required()} />
-                    <TextInput label="Label" source="label" />
-                </SimpleFormIterator>
-            </ArrayInput>
+            <FormDataConsumer>
+                {({formData, ...rest}) =>
+                    <ArrayInput source="labels" {...rest}>
+                        <SimpleFormIterator disableAdd={formData.labels.length >= languageOptions.length}>
+                            <SelectInput label="Language"
+                                         source="language"
+                                         choices={languageOptions}
+                                         defaultValue={getUnusedLanguage(formData.labels.map(item => item ? item.language : null))}
+                                         validate={required()}
+                            />
+                            <TextInput label="Label" source="label" />
+                        </SimpleFormIterator>
+                    </ArrayInput>
+                }
+            </FormDataConsumer>
             <BooleanInput source="required" />
             <BooleanInput source="requiresAdditionalData" />
             <FormDataConsumer>
@@ -94,8 +100,11 @@ export const QuestionEdit = props => (
             <FormDataConsumer>
                 {({formData, ...rest}) => formData.requiresAdditionalData &&
                     <ArrayInput source="additionalDataLabels" {...rest}>
-                        <SimpleFormIterator>
-                            <SelectInput label="Language" source="language" choices={languageOptions}
+                        <SimpleFormIterator disableAdd={formData.additionalDataLabels.length >= languageOptions.length}>
+                            <SelectInput label="Language"
+                                         source="language"
+                                         choices={languageOptions}
+                                         defaultValue={getUnusedLanguage(formData.additionalDataLabels.map(item => item ? item.language : null))}
                                          validate={required()}/>
                             <TextInput label="Label" source="label"/>
                         </SimpleFormIterator>

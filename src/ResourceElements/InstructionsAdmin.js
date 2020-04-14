@@ -1,12 +1,13 @@
 import {Show, Create, List, Edit, ReferenceField, TextField, ReferenceManyField, SingleFieldList, ReferenceInput, TextInput, SelectInput,
     ArrayInput, SimpleFormIterator, required, SimpleForm, SimpleShowLayout, Datagrid, ShowButton, EditButton, useDataProvider,
-    DateField
+    DateField, FormDataConsumer
 } from "react-admin";
 import {useFormState} from "react-final-form";
 import React, { useState, useEffect } from "react";
 import { InstructionContentField } from "../Components/InstructionContent";
 import RichTextInput from 'ra-input-rich-text';
 import {fetchUserGeoEntities, isAdmin} from "../utils";
+import {languageOptions, getUnusedLanguage} from "../language"
 
 export const InstructionsList = props => (
     <List {...props} sort={{ field: 'updatedAt', order: 'DESC' }}>
@@ -60,11 +61,6 @@ const severityOptions = [
     { id: 'low', name: 'Low' },
     { id: 'normal', name: 'Normal' },
     { id: 'high', name: 'High' },
-];
-
-const languageOptions = [
-    {id: 'en', name: 'US English'},
-    {id: 'es', name: 'Espanol'},
 ];
 
 const validateLocation = (values) => {
@@ -177,12 +173,21 @@ export const InstructionsCreate = ({ permissions, ...props }) => {
             }
             <TextInput source="zipcode"/>
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
-            <ArrayInput source="contents">
-                <SimpleFormIterator>
-                    <SelectInput label="Language" source="language" choices={languageOptions} validate={required()} />
-                    <RichTextInput label="Content" source="content" />
-                </SimpleFormIterator>
-            </ArrayInput>
+            <FormDataConsumer>
+                {({formData, ...rest}) =>
+                    <ArrayInput source="contents">
+                        <SimpleFormIterator disableAdd={formData.contents.length >= languageOptions.length}>
+                            <SelectInput label="Language"
+                                         source="language"
+                                         choices={languageOptions}
+                                         defaultValue={getUnusedLanguage(formData.contents.map(item => item ? item.language : null))}
+                                         validate={required()}
+                            />
+                            <RichTextInput label="Content" source="content" />
+                        </SimpleFormIterator>
+                    </ArrayInput>
+                }
+            </FormDataConsumer>
         </SimpleForm>
     </Create>
 )};
@@ -211,12 +216,21 @@ export const InstructionsEdit = ({ permissions, ...props }) => {
             }
             <TextInput source="zipcode" />
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
-            <ArrayInput source="contents">
-                <SimpleFormIterator>
-                    <SelectInput label="Language" source="language" choices={languageOptions} validate={required()} />
-                    <RichTextInput label="Content" source="content" />
-                </SimpleFormIterator>
-            </ArrayInput>
+            <FormDataConsumer>
+                {({formData, ...rest}) =>
+                    <ArrayInput source="contents">
+                        <SimpleFormIterator disableAdd={formData.contents.length >= languageOptions.length}>
+                            <SelectInput label="Language"
+                                         source="language"
+                                         choices={languageOptions}
+                                         defaultValue={getUnusedLanguage(formData.contents.map(item => item ? item.language : null))}
+                                         validate={required()}
+                            />
+                            <RichTextInput label="Content" source="content" />
+                        </SimpleFormIterator>
+                    </ArrayInput>
+                }
+            </FormDataConsumer>
         </SimpleForm>
     </Edit>
 )};
