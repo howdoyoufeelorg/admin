@@ -1,15 +1,25 @@
 import decodeJwt from 'jwt-decode';
+import {isAdmin} from "./utils";
 
-const localStorageItems = [
+export const userAuthItems = [
     'token',
-    'expires',
+    'exp',
     'roles',
-    'id'
+    'id',
 ];
-const localStorageSet = (data) => {
-    localStorageItems.forEach(item => localStorage.setItem(item, data[item]));
+
+export const userGeoentityItems = [
+    'countries',
+    'states',
+    'areas'
+];
+
+export const localStorageItems = [...userAuthItems, ...userGeoentityItems];
+
+export const localStorageSet = (data) => {
+    localStorageItems.forEach(item => data[item] ? localStorage.setItem(item, data[item]) : null);
 };
-const localStorageClear = () => {
+export const localStorageClear = () => {
     localStorageItems.forEach(item => localStorage.removeItem(item));
 };
 
@@ -34,7 +44,34 @@ export const authProvider = {
                 localStorageSet({
                     token,
                     ...decodedToken
-                })
+                });
+                return {token, userId: decodedToken.id};
+            }).then(({token, userId}) => {
+                if(! isAdmin()) {
+                    const user_fetch_uri = process.env.REACT_APP_API_HOST + '/api/users/' + userId;
+                    const request = new Request(user_fetch_uri, {
+                        method: 'GET',
+                        headers: new Headers({'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}),
+                    });
+                    fetch(request).then(response => {
+                        if (response.status < 200 || response.status >= 300) {
+                            throw new Error(response.statusText);
+                        }
+                        return response.json();
+                    }).then(({countries, states, areas}) => {
+                        const values = {
+                            countries: '',
+                            states: '',
+                            areas: ''
+                        };
+                        if(countries && Array.isArray(countries)) { values.countries = countries.join(',') }
+                        if(states && Array.isArray(states)) { values.states = states.join(',') }
+                        if(areas && Array.isArray(areas)) { values.areas = areas.join(',') }
+                        localStorageSet(values);
+                    })
+                } else {
+                    return Promise.resolve();
+                }
             });
     },
     logout: () => {
@@ -52,9 +89,12 @@ export const authProvider = {
     },
     getPermissions: (params) => {
         const roles = localStorage.getItem('roles');
-        const rolesArray = roles.split(',');
-        const role = rolesArray[0];
-        return roles ? Promise.resolve(role) : Promise.reject();
+        if(roles) {
+            const rolesArray = roles.split(',');
+            const role = rolesArray[0];
+            return role ? Promise.resolve(role) : Promise.reject();
+        }
+        return Promise.reject();
     },
 };
 

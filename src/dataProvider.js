@@ -3,6 +3,7 @@ import vkHydraDataProvider from "./dataProviders/hydraDataProvider";
 import parseHydraDocumentation from "@api-platform/api-doc-parser/lib/hydra/parseHydraDocumentation";
 import React from "react";
 import { Redirect, Route } from "react-router-dom";
+import {localStorageClear} from "./authProvider";
 
 export const entrypoint = process.env.REACT_APP_API_HOST + '/api';
 
@@ -23,14 +24,14 @@ const apiDocumentationParser = entrypoint => parseHydraDocumentation(entrypoint,
                             <Route path="/" render={() => {
                                 let response;
                                 if(window.localStorage.getItem("token")) {
-                                    const expires = window.localStorage.getItem("expires");
-                                    if(expires) {
+                                    const expires = window.localStorage.getItem("exp");
+                                    if(expires && expires !== 'undefined') {
                                         const currentTimestamp = (new Date()).getTime();
                                         if (parseInt(expires+'000') < currentTimestamp) {
-                                            window.localStorage.removeItem("token");
-                                            window.localStorage.removeItem("roles");
-                                            window.localStorage.removeItem("expires");
+                                            localStorageClear();
                                         }
+                                    } else {
+                                        localStorageClear();
                                     }
                                     response = window.location.reload()
                                 } else {

@@ -6,7 +6,7 @@ import {useFormState} from "react-final-form";
 import React, { useState, useEffect } from "react";
 import { InstructionContentField } from "../Components/InstructionContent";
 import RichTextInput from 'ra-input-rich-text';
-import {isAdmin} from "../utils";
+import {fetchUserGeoEntities, isAdmin} from "../utils";
 
 export const InstructionsList = props => (
     <List {...props} sort={{ field: 'updatedAt', order: 'DESC' }}>
@@ -76,7 +76,7 @@ const validateLocation = (values) => {
 };
 
 const CountrySelector = props => {
-    const {allowedCountries, ...rest} = props;
+    const {allowedCountries} = props;
     if(!allowedCountries.length) return null;
     return (
         <ReferenceInput label="Country" source="country" reference="countries" filter={{ id: allowedCountries}}>
@@ -102,8 +102,11 @@ const StateSelector = ({allowedStates, ...rest}) => {
                             ({data}) => setChoices(data)
                         )
                     })
-                    .catch(error => {
-                    })
+                    .catch(error => {})
+            } else {
+                dataProvider.getList('states', {pagination: false, sort: {"name":"asc"}}).then(
+                    ({data}) => setChoices(data)
+                )
             }
         }
     }, [country, allowedStates]);
@@ -128,8 +131,11 @@ const AreaSelector = ({allowedAreas, ...rest}) => {
                             ({data}) => setChoices(data)
                         )
                     })
-                    .catch(error => {
-                    })
+                    .catch(error => {})
+            } else {
+                dataProvider.getList('areas', {pagination: false, sort: {"name":"asc"}}).then(
+                    ({data}) => setChoices(data)
+                )
             }
         }
     }, [state, allowedAreas]);
@@ -138,29 +144,17 @@ const AreaSelector = ({allowedAreas, ...rest}) => {
 };
 
 export const InstructionsCreate = ({ permissions, ...props }) => {
-    const dataProvider = useDataProvider();
     const admin = isAdmin(permissions);
-    const [allowedCountries, setAllowedCountries] = useState([]);
-    const [allowedStates, setAllowedStates] = useState([]);
-    const [allowedAreas, setAllowedAreas] = useState([]);
     const [initialValues, setInitialValues] = useState({country: null, state: null, area: null});
-    useEffect(() => {
-        dataProvider.getOne('users', {id: 'api/users/'+localStorage.getItem('id')})
-            .then(({data}) => {
-                setAllowedCountries(data.countries);
-                setAllowedStates(data.states);
-                setAllowedAreas(data.areas);
-            })
-            .catch(error => {})
-    }, []);
-    if(allowedCountries.length === 1 && initialValues.country === null) {
-        setInitialValues(Object.assign({}, initialValues, {country: allowedCountries[0]}));
+    const {countries, states, areas} = fetchUserGeoEntities();
+    if(countries.length === 1 && initialValues.country === null) {
+        setInitialValues(Object.assign({}, initialValues, {country: countries[0]}));
     }
-    if(allowedStates.length === 1 && initialValues.state === null) {
-        setInitialValues(Object.assign({}, initialValues, {state: allowedStates[0]}));
+    if(states.length === 1 && initialValues.state === null) {
+        setInitialValues(Object.assign({}, initialValues, {state: states[0]}));
     }
-    if(allowedAreas.length === 1 && initialValues.area === null) {
-        setInitialValues(Object.assign({}, initialValues, {area: allowedAreas[0]}));
+    if(areas.length === 1 && initialValues.area === null) {
+        setInitialValues(Object.assign({}, initialValues, {area: areas[0]}));
     }
     return(<Create {...props}>
         <SimpleForm redirect="list" validate={validateLocation} initialValues={initialValues}>
@@ -169,17 +163,17 @@ export const InstructionsCreate = ({ permissions, ...props }) => {
                     <SelectInput optionText="name" allowEmpty/>
                 </ReferenceInput>
                 :
-                <CountrySelector allowedCountries={allowedCountries} />
+                <CountrySelector allowedCountries={countries} />
             }
             {admin ?
                 <StateSelector source="state" allowedStates="all"/>
                 :
-                allowedStates.length > 1 ? <StateSelector source="state" allowedStates={allowedStates}/> : null
+                states.length > 1 ? <StateSelector source="state" allowedStates={states}/> : null
             }
             {admin ?
                 <AreaSelector source="area" allowedAreas="all"/>
                 :
-                allowedAreas.length > 1 ? <AreaSelector source="area" allowedAreas={allowedAreas}/> : null
+                areas.length > 1 ? <AreaSelector source="area" allowedAreas={areas}/> : null
             }
             <TextInput source="zipcode"/>
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
@@ -194,20 +188,8 @@ export const InstructionsCreate = ({ permissions, ...props }) => {
 )};
 
 export const InstructionsEdit = ({ permissions, ...props }) => {
-    const dataProvider = useDataProvider();
     const admin = isAdmin(permissions);
-    const [allowedCountries, setAllowedCountries] = useState([]);
-    const [allowedStates, setAllowedStates] = useState([]);
-    const [allowedAreas, setAllowedAreas] = useState([]);
-    useEffect(() => {
-        dataProvider.getOne('users', {id: 'api/users/'+localStorage.getItem('id')})
-            .then(({data}) => {
-                setAllowedCountries(data.countries);
-                setAllowedStates(data.states);
-                setAllowedAreas(data.areas);
-            })
-            .catch(error => {})
-    }, []);
+    const {countries, states, areas} = fetchUserGeoEntities();
     return (<Edit {...props} >
         <SimpleForm redirect="list" validate={validateLocation}>
             {admin ?
@@ -215,17 +197,17 @@ export const InstructionsEdit = ({ permissions, ...props }) => {
                     <SelectInput optionText="name" allowEmpty/>
                 </ReferenceInput>
                 :
-                <CountrySelector allowedCountries={allowedCountries} />
+                <CountrySelector allowedCountries={countries} />
             }
             {admin ?
                 <StateSelector source="state" allowedStates="all"/>
                 :
-                allowedStates.length > 1 ? <StateSelector source="state" allowedStates={allowedStates}/> : null
+                states.length > 1 ? <StateSelector source="state" allowedStates={states}/> : null
             }
             {admin ?
                 <AreaSelector source="area" allowedAreas="all"/>
                 :
-                allowedAreas.length > 1 ? <AreaSelector source="area" allowedAreas={allowedAreas}/> : null
+                areas.length > 1 ? <AreaSelector source="area" allowedAreas={areas}/> : null
             }
             <TextInput source="zipcode" />
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>

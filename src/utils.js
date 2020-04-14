@@ -1,4 +1,5 @@
 import { cloneElement } from 'react'
+import {userGeoentityItems, localStorageSet} from "./authProvider";
 
 export const StringToLabelObject = ({ record, children, ...rest }) =>
     cloneElement(children, {
@@ -35,4 +36,13 @@ export const isSuperadmin = (role = '') => {
         }
     }
     return (role === 'ROLE_SUPERADMIN');
+}
+
+export const fetchUserGeoEntities = () => {
+    const values = {};
+    userGeoentityItems.forEach((item) => {
+        const storedValue = localStorage.getItem(item);
+        values[item] = (storedValue !== null && storedValue.length) ? storedValue.split(',') : [];
+    });
+    return values;
 }

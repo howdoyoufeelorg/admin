@@ -1,15 +1,27 @@
 import React from "react";
-import {Show, List, Edit, TextField, TextInput, ArrayInput, SimpleFormIterator, SimpleForm, SimpleShowLayout, Datagrid, ShowButton, EditButton, ArrayField} from "react-admin";
+import {Show, List, Edit, TextField, TextInput, ArrayInput, SimpleFormIterator, SimpleForm, SimpleShowLayout, Datagrid, ShowButton, EditButton,
+    ArrayField, BulkDeleteButton} from "react-admin";
+import {fetchUserGeoEntities, isAdmin} from "../utils";
 
-export const AreasList = props => (
-    <List {...props}>
-        <Datagrid>
-            <TextField source="name"/>
-            <ShowButton />
-            <EditButton />
-        </Datagrid>
-    </List>
-)
+const BulkActionButtons = props => (
+    <>
+        <BulkDeleteButton {...props} />
+    </>
+);
+
+export const AreasList = ({privileges, ...props}) => {
+    const {areas} = fetchUserGeoEntities();
+    return (
+        <List {...props} bulkActionButtons={isAdmin(privileges) ? <BulkActionButtons/> : false}
+              filter={!isAdmin() ? {id: areas} : {}}>
+            <Datagrid>
+                <TextField source="name"/>
+                <ShowButton/>
+                <EditButton/>
+            </Datagrid>
+        </List>
+    )
+}
 
 export const AreasShow = props => {
     return (
@@ -44,10 +56,10 @@ export const AreasShow = props => {
     </Show>
 )}
 
-export const AreasEdit = props => (
+export const AreasEdit = ({privileges, ...props}) => (
     <Edit {...props} >
         <SimpleForm redirect="list">
-            <TextInput source="name"/>
+            {isAdmin(privileges) ? <TextInput source="name"/> : null}
             <ArrayInput source="webResources">
                 <SimpleFormIterator>
                     <TextInput source="description" label="Description"/>
