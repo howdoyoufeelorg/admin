@@ -3,7 +3,6 @@ import { HydraAdmin } from "@api-platform/admin";
 import { authProvider } from "./authProvider";
 import { entrypoint, dataProvider } from "./dataProvider";
 import { Route } from "react-router-dom";
-import {QuestionCreate, QuestionEdit, QuestionsList} from "./QuestionsAdmin";
 import {Resource} from "react-admin";
 import inviteUser from './inviteUser';
 import HdyfLayout from './layout/HdyfLayout';
@@ -13,7 +12,7 @@ import {
     InstructionsList,
     InstructionsShow
 } from "./ResourceElements/InstructionsAdmin";
-
+import {QuestionCreate, QuestionEdit, QuestionsList} from "./ResourceElements/QuestionsAdmin";
 import {CountriesEdit, CountriesList, CountriesShow} from "./ResourceElements/CountriesAdmin";
 import {StatesList, StatesEdit, StatesShow} from "./ResourceElements/StatesAdmin";
 import {AreasEdit, AreasList, AreasShow} from "./ResourceElements/AreasAdmin";

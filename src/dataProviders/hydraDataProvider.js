@@ -374,7 +374,7 @@ export default (
 
             default:
                 return Promise.resolve(
-                    transformJsonLdDocumentToReactAdminDocument(response.json, true, true, resource === 'instructions'),
+                    transformJsonLdDocumentToReactAdminDocument(response.json, true, true, (resource === 'instructions' || resource === 'questions')),
                 )
                     .then(data => convertHydraDataToReactAdminData(resource, data))
                     .then(data => ({ data }));
