@@ -59,7 +59,7 @@ export const InstructionsShow = props => (
 
 const severityOptions = [
     { id: 'low', name: 'Low' },
-    { id: 'normal', name: 'Normal' },
+    { id: 'medium', name: 'Medium' },
     { id: 'high', name: 'High' },
 ];
 
