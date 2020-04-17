@@ -1,6 +1,6 @@
 import {Show, Create, List, Edit, ReferenceField, TextField, ReferenceManyField, SingleFieldList, ReferenceInput, TextInput, SelectInput,
     ArrayInput, SimpleFormIterator, required, SimpleForm, SimpleShowLayout, Datagrid, ShowButton, EditButton, useDataProvider,
-    DateField, FormDataConsumer
+    DateField, FormDataConsumer, useInput
 } from "react-admin";
 import {useFormState} from "react-final-form";
 import React, { useState, useEffect } from "react";
@@ -8,6 +8,8 @@ import { InstructionContentField } from "../Components/InstructionContent";
 import RichTextInput from 'ra-input-rich-text';
 import {fetchUserGeoEntities, isAdmin} from "../utils";
 import {languageOptions, getUnusedLanguage} from "../language"
+import {Select, MenuItem} from '@material-ui/core';
+import {localStorageSet} from "../authProvider"
 
 export const InstructionsList = props => (
     <List {...props} sort={{ field: 'updatedAt', order: 'DESC' }}>
@@ -81,7 +83,9 @@ const CountrySelector = props => {
     )
 };
 
-const StateSelector = ({allowedStates, ...rest}) => {
+const StateSelector = (props) => {
+    const {allowedStates, source, ...rest} = props;
+    const { input, meta: { touched, error } } = useInput(props);
     const [choices, setChoices] = useState([]);
     const {values: {country}} = useFormState();
     const dataProvider = useDataProvider();
@@ -107,7 +111,7 @@ const StateSelector = ({allowedStates, ...rest}) => {
         }
     }, [country, allowedStates]);
     if(allowedStates !== 'all' && !allowedStates.length) return null;
-    return(<SelectInput choices={choices} {...rest} />)
+    return(<SelectInput choices={choices} source={source} />)
 };
 
 const AreaSelector = ({allowedAreas, ...rest}) => {
@@ -141,16 +145,11 @@ const AreaSelector = ({allowedAreas, ...rest}) => {
 
 export const InstructionsCreate = ({ permissions, ...props }) => {
     const admin = isAdmin(permissions);
-    const [initialValues, setInitialValues] = useState({country: null, state: null, area: null});
     const {countries, states, areas} = fetchUserGeoEntities();
-    if(countries.length === 1 && initialValues.country === null) {
-        setInitialValues(Object.assign({}, initialValues, {country: countries[0]}));
-    }
-    if(states.length === 1 && initialValues.state === null) {
-        setInitialValues(Object.assign({}, initialValues, {state: states[0]}));
-    }
-    if(areas.length === 1 && initialValues.area === null) {
-        setInitialValues(Object.assign({}, initialValues, {area: areas[0]}));
+    const initialValues = {
+        country: countries.length === 1 ? countries[0] : null,
+        state: states.length === 1 ? states[0] : null,
+        area: areas.length === 1 ? areas[0] : null,
     }
     return(<Create {...props}>
         <SimpleForm redirect="list" validate={validateLocation} initialValues={initialValues}>
@@ -174,18 +173,8 @@ export const InstructionsCreate = ({ permissions, ...props }) => {
             <TextInput source="zipcode"/>
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
             <FormDataConsumer>
-                {({formData, ...rest}) =>
-                    <ArrayInput source="contents">
-                        <SimpleFormIterator disableAdd={formData.contents.length >= languageOptions.length}>
-                            <SelectInput label="Language"
-                                         source="language"
-                                         choices={languageOptions}
-                                         defaultValue={getUnusedLanguage(formData.contents.map(item => item ? item.language : null))}
-                                         validate={required()}
-                            />
-                            <RichTextInput label="Content" source="content" />
-                        </SimpleFormIterator>
-                    </ArrayInput>
+                {(props) =>
+                    <InstructionContent {...props}/>
                 }
             </FormDataConsumer>
         </SimpleForm>
@@ -217,20 +206,68 @@ export const InstructionsEdit = ({ permissions, ...props }) => {
             <TextInput source="zipcode" />
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
             <FormDataConsumer>
-                {({formData, ...rest}) =>
-                    <ArrayInput source="contents">
-                        <SimpleFormIterator disableAdd={formData.contents.length >= languageOptions.length}>
-                            <SelectInput label="Language"
-                                         source="language"
-                                         choices={languageOptions}
-                                         defaultValue={getUnusedLanguage(formData.contents.map(item => item ? item.language : null))}
-                                         validate={required()}
-                            />
-                            <RichTextInput label="Content" source="content" />
-                        </SimpleFormIterator>
-                    </ArrayInput>
+                {(props) =>
+                    <InstructionContent {...props}/>
                 }
             </FormDataConsumer>
         </SimpleForm>
     </Edit>
 )};
+
+const InstructionContent = (props) => {
+    const {formData: {contents = []}, ...rest} = props;
+    return (
+        <ArrayInput source="contents" {...rest}>
+            <SimpleFormIterator disableAdd={contents.length >= languageOptions.length}>
+                <SelectInput label="Language"
+                             source="language"
+                             choices={languageOptions}
+                             validate={required()}
+                             defaultValue={getUnusedLanguage(contents.map(item => item ? item.language : null))}
+                />
+                <TranslatingInput label="Content" source="content" />
+            </SimpleFormIterator>
+        </ArrayInput>
+    )
+}
+
+const TranslatingInput = (props) => {
+    const {source, ...rest} = props;
+    const {values: {contents}} = useFormState();
+    const {
+        id,
+        isRequired,
+        input: { value, onChange },
+        meta: { touched, error },
+    } = useInput({ source, ...rest });
+    useEffect(() => {
+        if(contents.length > 1) {
+            // Fetch existing text
+            const existingContents = contents[0];
+            const currentContents = contents[contents.length-1];
+            if(currentContents !== undefined) {
+                const thisLanguage = currentContents.language;
+                if (value === '' || value === '<p><br></p>') {
+                    const translate_uri = process.env.REACT_APP_API_HOST + '/do-translate';
+                    const request = new Request(translate_uri, {
+                        method: 'POST',
+                        body: JSON.stringify({language: thisLanguage, content: existingContents.content}),
+                        headers: new Headers({
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        }),
+                    });
+                    fetch(request).then(response => {
+                        if (response.status < 200 || response.status >= 300) {
+                            throw new Error(response.statusText);
+                        }
+                        return response.json();
+                    }).then((json) => {
+                        onChange(json.translation);
+                    })
+                }
+            }
+        }
+    }, [contents])
+    return (<RichTextInput {...props}/>)
+}
