@@ -174,7 +174,7 @@ export const InstructionsCreate = ({ permissions, ...props }) => {
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
             <FormDataConsumer>
                 {(props) =>
-                    <InstructionContent {...props}/>
+                    <InstructionContent source="contents" {...props}/>
                 }
             </FormDataConsumer>
         </SimpleForm>
@@ -207,7 +207,7 @@ export const InstructionsEdit = ({ permissions, ...props }) => {
             <SelectInput source="severity" choices={severityOptions} validate={required()}/>
             <FormDataConsumer>
                 {(props) =>
-                    <InstructionContent {...props}/>
+                    <InstructionContent source="contents"  {...props}/>
                 }
             </FormDataConsumer>
         </SimpleForm>
@@ -217,7 +217,7 @@ export const InstructionsEdit = ({ permissions, ...props }) => {
 const InstructionContent = (props) => {
     const {formData: {contents = []}, ...rest} = props;
     return (
-        <ArrayInput source="contents" {...rest}>
+        <ArrayInput {...rest}>
             <SimpleFormIterator disableAdd={contents.length >= languageOptions.length}>
                 <SelectInput label="Language"
                              source="language"
@@ -247,7 +247,7 @@ const TranslatingInput = (props) => {
             const currentContents = contents[contents.length-1];
             if(currentContents !== undefined) {
                 const thisLanguage = currentContents.language;
-                if (value === '' || value === '<p><br></p>') {
+                if ((value === '' || value === '<p><br></p>') && existingContents.content) {
                     const translate_uri = process.env.REACT_APP_API_HOST + '/do-translate';
                     const request = new Request(translate_uri, {
                         method: 'POST',
