@@ -8,7 +8,7 @@ import classnames from 'classnames';
 import inflection from 'inflection';
 import { getResources, useTranslate, Translate, ReduxState } from 'ra-core';
 import { DashboardMenuItem, MenuItemLink } from 'ra-ui-materialui';
-import {isAdmin} from "../utils";
+import {isAdmin, isSuperadmin} from "../utils";
 
 const useStyles = makeStyles(
     {
@@ -80,7 +80,7 @@ const Menu = (props) => {
                         sidebarIsOpen={open}
                     />
                 ))}
-            {isAdmin() ? <MenuItemLink
+            {isSuperadmin() ? <MenuItemLink
                 to="/invite-user"
                 primaryText="Invite User"
                 leftIcon={<UserIcon />}

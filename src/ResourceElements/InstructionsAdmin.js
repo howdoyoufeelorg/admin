@@ -8,8 +8,9 @@ import { InstructionContentField } from "../Components/InstructionContent";
 import RichTextInput from 'ra-input-rich-text';
 import {fetchUserGeoEntities, isAdmin} from "../utils";
 import {languageOptions, getUnusedLanguage} from "../language"
-import {Select, MenuItem} from '@material-ui/core';
+import {makeStyles} from '@material-ui/core';
 import {localStorageSet} from "../authProvider"
+import HdyfHelpSidebar from "../layout/HdyfHelpSidebar"
 
 export const InstructionsList = props => (
     <List {...props} sort={{ field: 'updatedAt', order: 'DESC' }}>
@@ -26,6 +27,7 @@ export const InstructionsList = props => (
                 <TextField source="name" />
             </ReferenceField>
             <TextField source="zipcode" />
+            <TextField source="severity" />
             {/*<ReferenceManyField label="Contents" reference="instruction_contents" target="instruction">
                 <SingleFieldList>
                     <InstructionContentField />
@@ -181,38 +183,55 @@ export const InstructionsCreate = ({ permissions, ...props }) => {
     </Create>
 )};
 
+const styles = {
+    editWithHelpSidebar: {
+        display: "flex"
+    },
+    formDiv: {
+        flexGrow: 1
+    }
+}
+
+const useStyles = makeStyles(styles);
+
 export const InstructionsEdit = ({ permissions, ...props }) => {
     const admin = isAdmin(permissions);
     const {countries, states, areas} = fetchUserGeoEntities();
-    return (<Edit {...props} >
-        <SimpleForm redirect="list" validate={validateLocation}>
-            {admin ?
-                <ReferenceInput label="Country" source="country" reference="countries">
-                    <SelectInput optionText="name" allowEmpty/>
-                </ReferenceInput>
-                :
-                <CountrySelector allowedCountries={countries} />
-            }
-            {admin ?
-                <StateSelector source="state" allowedStates="all"/>
-                :
-                states.length > 1 ? <StateSelector source="state" allowedStates={states}/> : null
-            }
-            {admin ?
-                <AreaSelector source="area" allowedAreas="all"/>
-                :
-                areas.length > 1 ? <AreaSelector source="area" allowedAreas={areas}/> : null
-            }
-            <TextInput source="zipcode" />
-            <SelectInput source="severity" choices={severityOptions} validate={required()}/>
-            <FormDataConsumer>
-                {(props) =>
-                    <InstructionContent source="contents"  {...props}/>
-                }
-            </FormDataConsumer>
-        </SimpleForm>
-    </Edit>
-)};
+    const classes = useStyles();
+    return (
+        <div className={classes.editWithHelpSidebar}>
+            <Edit className={classes.formDiv} {...props} >
+                <SimpleForm redirect="list" validate={validateLocation}>
+                    {admin ?
+                        <ReferenceInput label="Country" source="country" reference="countries">
+                            <SelectInput optionText="name" allowEmpty/>
+                        </ReferenceInput>
+                        :
+                        <CountrySelector allowedCountries={countries}/>
+                    }
+                    {admin ?
+                        <StateSelector source="state" allowedStates="all"/>
+                        :
+                        states.length > 1 ? <StateSelector source="state" allowedStates={states}/> : null
+                    }
+                    {admin ?
+                        <AreaSelector source="area" allowedAreas="all"/>
+                        :
+                        areas.length > 1 ? <AreaSelector source="area" allowedAreas={areas}/> : null
+                    }
+                    <TextInput source="zipcode"/>
+                    <SelectInput source="severity" choices={severityOptions} validate={required()}/>
+                    <FormDataConsumer>
+                        {(props) =>
+                            <InstructionContent source="contents"  {...props}/>
+                        }
+                    </FormDataConsumer>
+                </SimpleForm>
+            </Edit>
+            <HdyfHelpSidebar helpSection="instructions" />
+        </div>
+    )
+};
 
 const InstructionContent = (props) => {
     const {formData: {contents = []}, ...rest} = props;
