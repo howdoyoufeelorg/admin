@@ -18,6 +18,7 @@ import {StatesList, StatesEdit, StatesShow} from "./ResourceElements/StatesAdmin
 import {AreasEdit, AreasList, AreasShow} from "./ResourceElements/AreasAdmin";
 import {UsersEdit, UsersList, UsersShow} from "./ResourceElements/UsersAdmin";
 import {fetchUserGeoEntities, isAdmin, isSuperadmin} from "./utils";
+import i18nProvider from "./i18n/i18nProvider";
 
 const customRoutes = [
     <Route key="invite_user" path="/invite-user" component={inviteUser.edit}/>
@@ -29,6 +30,7 @@ export default () => {
         <HydraAdmin
             dataProvider={ dataProvider }
             authProvider={ authProvider }
+            i18nProvider={ i18nProvider }
             entrypoint={entrypoint}
             customRoutes={customRoutes}
             layout={HdyfLayout}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, TextInput, SimpleForm, ReferenceInput, SelectInput } from 'react-admin';
+import { Edit, TextInput, SimpleForm, ReferenceInput, SelectInput, Toolbar, SaveButton } from 'react-admin';
 
 const validateArea = (values) => {
     const errors = {};
@@ -12,6 +12,16 @@ const validateArea = (values) => {
     return errors;
 };
 
+const InviteUserToolbar = props => (
+    <Toolbar {...props} >
+        <SaveButton
+            label="SEND INVITES"
+            redirect="/"
+            submitOnEnter={true}
+        />
+    </Toolbar>
+)
+
 const InviteUser = ({ staticContext, ...props }) => {
 
     return (
@@ -21,9 +31,11 @@ const InviteUser = ({ staticContext, ...props }) => {
             basePath="/invite-user"
             redirect={false} // I don't need any redirection here, there's no list page
             title="Invite User"
+            undoable={false}
+            successMessage="Invites sent"
             {...props}
         >
-            <SimpleForm validate={validateArea}>
+            <SimpleForm validate={validateArea} toolbar={<InviteUserToolbar />}>
                 <ReferenceInput label="Area" source="area" reference="areas" allowEmpty>
                     <SelectInput optionText="name" />
                 </ReferenceInput>
