@@ -1,13 +1,11 @@
 steps:
-    -   name: node:12
-        entrypoint: yarn
-        args: ['install']
-    -   name: node:12
-        entrypoint: yarn
-        args: ['build']
+    -   name: 'gcr.io/cloud-builders/docker'
+        args: [ 'build', '-t', 'gcr.io/m-app-3/hdyf_admin:$COMMIT_SHA', '.' ]
+        timeout: 600s
     # Push the image to Container Registry
     -   name: 'gcr.io/cloud-builders/docker'
         args: ['push', 'gcr.io/m-app-3/hdyf_admin:$COMMIT_SHA']
+        timeout: 600s
     -   name: "gcr.io/cloud-builders/gcloud"
         args:
             - 'run'
