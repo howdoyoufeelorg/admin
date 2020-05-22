@@ -34,6 +34,7 @@
     "prestart": "yarn global add serve",
     "local": "react-scripts start",
     "build": "react-scripts build",
+    "gcp-build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
