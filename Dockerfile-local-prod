@@ -9,8 +9,8 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn
 
-EXPOSE 3000
+EXPOSE 8080
 
-ADD entrypoint.sh /usr/src/
+ADD entrypoint-prod.sh /usr/src/
 
-ENTRYPOINT /usr/src/entrypoint.sh
+ENTRYPOINT /usr/src/entrypoint-prod.sh
