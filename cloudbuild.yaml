@@ -1,6 +1,4 @@
 steps:
     - name: "gcr.io/cloud-builders/gcloud"
       args: ["app", "deploy"]
-      timeout: 600s
-options:
-    machineType: 'N1_HIGHCPU_8'
+timeout: 1600s
