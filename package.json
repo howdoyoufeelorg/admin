@@ -28,6 +28,8 @@
     "typescript": "^3.8.3"
   },
   "scripts": {
+    "prepare": "yarn build",
+    "pretest": "yarn build",
     "start": "serve -s build",
     "prestart": "yarn global add serve",
     "local": "react-scripts start",
