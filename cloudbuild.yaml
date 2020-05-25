@@ -24,5 +24,5 @@ steps:
               cp -rf ./build/* ./gae-flex/build/
 
     - name: "gcr.io/cloud-builders/gcloud"
-      args: ["app", "deploy", './gae-flex/app.yaml', '--version=$COMMIT_SHA']
+      args: ["app", "deploy", './gae-flex/app.yaml', '--version=$SHORT_SHA']
 timeout: 1600s
