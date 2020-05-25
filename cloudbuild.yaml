@@ -1,4 +1,28 @@
 steps:
+    - name: node:12
+      entrypoint: yarn
+      args: ['install']
+
+    - name: node:12
+      entrypoint: yarn
+      args: ['build']
+      env:
+          -   'REACT_APP_API_HOST=https://hdyf-api-dot-m-app-3.appspot.com'
+
+    - name: alpine
+      entrypoint: sh
+      args:
+          - -c
+          - |
+              mkdir ./gae-flex/build/
+
+    - name: alpine
+      entrypoint: sh
+      args:
+          - -c
+          - |
+              cp -rf ./build/* ./gae-flex/build/
+
     - name: "gcr.io/cloud-builders/gcloud"
-      args: ["app", "deploy"]
+      args: ["app", "deploy", './gae-flex/app.yaml', '--version=$COMMIT_SHA']
 timeout: 1600s

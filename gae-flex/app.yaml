@@ -2,9 +2,6 @@ service: hdyf-admin
 runtime: nodejs
 env: flex
 
-env_variables:
-    REACT_APP_API_HOST: https://hdyf-api-dot-m-app-3.appspot.com
-
 handlers:
     - url: /static/js/(.*)
       static_files: build/static/js/\1
@@ -25,8 +22,8 @@ handlers:
       static_files: build/index.html
       upload: build/index.html
 
-readiness_check:
-    app_start_timeout_sec: 1800
+#readiness_check:
+#    app_start_timeout_sec: 1800
 
 # This sample incurs costs to run on the App Engine flexible environment.
 # The settings below are to reduce costs during testing and are not appropriate
