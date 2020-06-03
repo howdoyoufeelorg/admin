@@ -56,9 +56,7 @@ const HdyfHelpSidebar = ({helpSection}) => {
                     Object.keys(currentHelpNeeded).map((key, index) =>
                         <div className={classes.helpEntry} key={index}>
                             <div className={classes.helpEntryTitle}>{currentHelpNeeded[key].title}</div>
-                            <div className={classes.helpEntryContent}>
-                                {currentHelpNeeded[key].content}
-                            </div>
+                            <div className={classes.helpEntryContent} dangerouslySetInnerHTML={{ __html: currentHelpNeeded[key].content}} />
                         </div>
                     )
                 }

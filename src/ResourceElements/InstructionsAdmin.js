@@ -143,44 +143,6 @@ const AreaSelector = ({allowedAreas, ...rest}) => {
     return(<SelectInput choices={choices} {...rest} />)
 };
 
-export const InstructionsCreate = ({ permissions, ...props }) => {
-    const admin = isAdmin(permissions);
-    const {countries, states, areas} = fetchUserGeoEntities();
-    const initialValues = {
-        country: countries.length === 1 ? countries[0] : null,
-        state: states.length === 1 ? states[0] : null,
-        area: areas.length === 1 ? areas[0] : null,
-    }
-    return(<Create {...props}>
-        <SimpleForm redirect="list" validate={validateLocation} initialValues={initialValues}>
-            {admin ?
-                <ReferenceInput label="Country" source="country" reference="countries">
-                    <SelectInput optionText="name" allowEmpty/>
-                </ReferenceInput>
-                :
-                <CountrySelector allowedCountries={countries} />
-            }
-            {admin ?
-                <StateSelector source="state" allowedStates="all"/>
-                :
-                states.length > 1 ? <StateSelector source="state" allowedStates={states}/> : null
-            }
-            {admin ?
-                <AreaSelector source="area" allowedAreas="all"/>
-                :
-                areas.length > 1 ? <AreaSelector source="area" allowedAreas={areas}/> : null
-            }
-            <TextInput source="zipcode"/>
-            <SelectInput source="severity" choices={severityOptions} validate={required()}/>
-            <FormDataConsumer>
-                {(props) =>
-                    <InstructionContent source="contents" {...props}/>
-                }
-            </FormDataConsumer>
-        </SimpleForm>
-    </Create>
-)};
-
 const styles = {
     editWithHelpSidebar: {
         display: "flex"
@@ -191,6 +153,49 @@ const styles = {
 }
 
 const useStyles = makeStyles(styles);
+
+export const InstructionsCreate = ({ permissions, ...props }) => {
+    const admin = isAdmin(permissions);
+    const {countries, states, areas} = fetchUserGeoEntities();
+    const initialValues = {
+        country: countries.length === 1 ? countries[0] : null,
+        state: states.length === 1 ? states[0] : null,
+        area: areas.length === 1 ? areas[0] : null,
+    }
+    const classes = useStyles();
+    return (
+        <div className={classes.editWithHelpSidebar}>
+            <Create className={classes.formDiv} {...props}>
+                <SimpleForm redirect="list" validate={validateLocation} initialValues={initialValues}>
+                    {admin ?
+                        <ReferenceInput label="Country" source="country" reference="countries">
+                            <SelectInput optionText="name" allowEmpty/>
+                        </ReferenceInput>
+                        :
+                        <CountrySelector allowedCountries={countries}/>
+                    }
+                    {admin ?
+                        <StateSelector source="state" allowedStates="all"/>
+                        :
+                        states.length > 1 ? <StateSelector source="state" allowedStates={states}/> : null
+                    }
+                    {admin ?
+                        <AreaSelector source="area" allowedAreas="all"/>
+                        :
+                        areas.length > 1 ? <AreaSelector source="area" allowedAreas={areas}/> : null
+                    }
+                    <TextInput source="zipcode"/>
+                    <SelectInput source="severity" choices={severityOptions} validate={required()}/>
+                    <FormDataConsumer>
+                        {(props) =>
+                            <InstructionContent source="contents" {...props}/>
+                        }
+                    </FormDataConsumer>
+                </SimpleForm>
+            </Create>
+            <HdyfHelpSidebar helpSection="instructions"/>
+        </div>
+    )};
 
 export const InstructionsEdit = ({ permissions, ...props }) => {
     const admin = isAdmin(permissions);

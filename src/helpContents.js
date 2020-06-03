@@ -22,7 +22,7 @@ export const helpContents = {
         },
         contents: {
             title: "Contents",
-            content: "Insert the contents in multiple languages, as they should appear on the Instructions screen. Insert one language first, then click on ADD and pick the other language. An auto-translated option will be displayed for you to edit further, if needed. If you want to activate the translation process again, you can remove the language entry and insert it again."
+            content: "The actual text of the Instruction in multiple languages, as they should appear on the Instructions screen. <strong>YOU CAN NOT USE THIS TO ADD MULTIPLE INSTRUCTIONS!</strong> <br><br> Insert one language first, then click on ADD and pick the other language. An auto-translated option will be displayed for you to edit further, if needed. If you want to activate the translation process again, you can remove the language entry and insert it again."
         },
     },
     resources: {
