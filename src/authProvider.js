@@ -45,15 +45,15 @@ export const authProvider = {
                     token,
                     ...decodedToken
                 });
-                return {token, userId: decodedToken.id};
-            }).then(({token, userId}) => {
-                if(! isAdmin()) {
+                const role = decodedToken.roles[0];
+                const userId = decodedToken.id
+                if(! isAdmin(role)) {
                     const user_fetch_uri = process.env.REACT_APP_API_HOST + '/api/users/' + userId;
                     const request = new Request(user_fetch_uri, {
                         method: 'GET',
                         headers: new Headers({'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}),
                     });
-                    fetch(request).then(response => {
+                    return fetch(request).then(response => {
                         if (response.status < 200 || response.status >= 300) {
                             throw new Error(response.statusText);
                         }
@@ -64,15 +64,21 @@ export const authProvider = {
                             states: '',
                             areas: ''
                         };
-                        if(countries && Array.isArray(countries)) { values.countries = countries.join(',') }
-                        if(states && Array.isArray(states)) { values.states = states.join(',') }
-                        if(areas && Array.isArray(areas)) { values.areas = areas.join(',') }
+                        if (countries && Array.isArray(countries)) {
+                            values.countries = countries.join(',')
+                        }
+                        if (states && Array.isArray(states)) {
+                            values.states = states.join(',')
+                        }
+                        if (areas && Array.isArray(areas)) {
+                            values.areas = areas.join(',')
+                        }
                         localStorageSet(values);
                     })
                 } else {
                     return Promise.resolve();
                 }
-            });
+            })
     },
     logout: () => {
         localStorageClear();
