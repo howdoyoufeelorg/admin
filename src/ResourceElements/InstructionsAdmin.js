@@ -85,9 +85,7 @@ const CountrySelector = props => {
     )
 };
 
-const StateSelector = (props) => {
-    const {allowedStates, source, ...rest} = props;
-    const { input, meta: { touched, error } } = useInput(props);
+const StateSelector = ({allowedStates, ...rest}) => {
     const [choices, setChoices] = useState([]);
     const {values: {country}} = useFormState();
     const dataProvider = useDataProvider();
@@ -112,8 +110,8 @@ const StateSelector = (props) => {
             }
         }
     }, [country, allowedStates]);
-    if(allowedStates !== 'all' && !allowedStates.length) return null;
-    return(<SelectInput choices={choices} source={source} />)
+    if (!choices.length) return null;
+    return(<SelectInput choices={choices} {...rest} />)
 };
 
 const AreaSelector = ({allowedAreas, ...rest}) => {
@@ -141,7 +139,7 @@ const AreaSelector = ({allowedAreas, ...rest}) => {
             }
         }
     }, [state, allowedAreas]);
-    if(allowedAreas !== 'all' && !allowedAreas.length) return null;
+    if(!choices.length) return null;
     return(<SelectInput choices={choices} {...rest} />)
 };
 
