@@ -1,6 +1,6 @@
 import {Show, Create, List, Edit, ReferenceField, TextField, ReferenceManyField, SingleFieldList, ReferenceInput, TextInput, SelectInput,
     ArrayInput, SimpleFormIterator, required, SimpleForm, SimpleShowLayout, Datagrid, ShowButton, EditButton, useDataProvider,
-    DateField, FormDataConsumer, useInput
+    DateField, useInput
 } from "react-admin";
 import {useFormState} from "react-final-form";
 import React, { useState, useEffect } from "react";
@@ -149,6 +149,9 @@ const styles = {
     },
     formDiv: {
         flexGrow: 1
+    },
+    contents: {
+        width: '100% !important'
     }
 }
 
@@ -186,11 +189,7 @@ export const InstructionsCreate = ({ permissions, ...props }) => {
                     }
                     <TextInput source="zipcode"/>
                     <SelectInput source="severity" choices={severityOptions} validate={required()}/>
-                    <FormDataConsumer>
-                        {(props) =>
-                            <InstructionContent source="contents" {...props}/>
-                        }
-                    </FormDataConsumer>
+                    <InstructionContent className={classes.contents} source="contents" />
                 </SimpleForm>
             </Create>
             <HdyfHelpSidebar helpSection="instructions"/>
@@ -224,11 +223,7 @@ export const InstructionsEdit = ({ permissions, ...props }) => {
                     }
                     <TextInput source="zipcode"/>
                     <SelectInput source="severity" choices={severityOptions} validate={required()}/>
-                    <FormDataConsumer>
-                        {(props) =>
-                            <InstructionContent source="contents"  {...props}/>
-                        }
-                    </FormDataConsumer>
+                    <InstructionContent className={classes.contents} source="contents" />
                 </SimpleForm>
             </Edit>
             <HdyfHelpSidebar helpSection="instructions" />
@@ -237,9 +232,9 @@ export const InstructionsEdit = ({ permissions, ...props }) => {
 };
 
 const InstructionContent = (props) => {
-    const {formData: {contents = []}, ...rest} = props;
+    const {values: {contents = []}} = useFormState();
     return (
-        <ArrayInput {...rest}>
+        <ArrayInput {...props}>
             <SimpleFormIterator disableAdd={contents.length >= languageOptions.length}>
                 <SelectInput label="Language"
                              source="language"
@@ -290,6 +285,6 @@ const TranslatingInput = (props) => {
                 }
             }
         }
-    }, [contents])
+    }, [contents]);
     return (<RichTextInput {...props}/>)
 }
