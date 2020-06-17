@@ -9,30 +9,16 @@ import RichTextInput from 'ra-input-rich-text';
 import {fetchUserGeoEntities, isAdmin} from "../utils";
 import {languageOptions, getUnusedLanguage} from "../language"
 import {makeStyles} from '@material-ui/core';
-import {localStorageSet} from "../authProvider"
 import HdyfHelpSidebar from "../layout/HdyfHelpSidebar"
+import {EffectiveGeolocationField} from "../Components/EffectiveGeolocationField"
 
 export const InstructionsList = props => (
     <List {...props} sort={{ field: 'updatedAt', order: 'DESC' }}>
         <Datagrid>
             <DateField label="Created" source="createdAt" />
             <DateField label="Updated" source="updatedAt" />
-            <ReferenceField label="Country" source="country" reference="countries">
-                <TextField source="name" />
-            </ReferenceField>
-            <ReferenceField label="State" source="state" reference="states">
-                <TextField source="name" />
-            </ReferenceField>
-            <ReferenceField label="Area" source="area" reference="areas">
-                <TextField source="name" />
-            </ReferenceField>
-            <TextField source="zipcode" />
+            <EffectiveGeolocationField label="Effective Geolocation" />
             <TextField source="severity" />
-            {/*<ReferenceManyField label="Contents" reference="instruction_contents" target="instruction">
-                <SingleFieldList>
-                    <InstructionContentField />
-                </SingleFieldList>
-            </ReferenceManyField>*/}
             <ShowButton />
             <EditButton />
         </Datagrid>
@@ -41,7 +27,8 @@ export const InstructionsList = props => (
 
 export const InstructionsShow = props => (
     <Show {...props}>
-        <SimpleShowLayout>
+        <SimpleShowLayout {...props}>
+            <EffectiveGeolocationField label="Effective Geolocation" addLabel={true} />
             <ReferenceField label="Country" source="country" reference="countries">
                 <TextField source="name" />
             </ReferenceField>
@@ -53,9 +40,10 @@ export const InstructionsShow = props => (
             </ReferenceField>
             <TextField source="zipcode" />
             <ReferenceManyField label="Contents" reference="instruction_contents" target="instruction">
-                <SingleFieldList>
+                <Datagrid>
+                    <TextField source="language" />
                     <InstructionContentField />
-                </SingleFieldList>
+                </Datagrid>
             </ReferenceManyField>
         </SimpleShowLayout>
     </Show>
