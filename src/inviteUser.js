@@ -4,10 +4,10 @@ import { Edit, TextInput, SimpleForm, ReferenceInput, SelectInput, Toolbar, Save
 const validateArea = (values) => {
     const errors = {};
     if (!values.area && !values.state && !values.country ) {
-        errors.area = ['You must select Area or State!'];
+        errors.area = ['hdyf.validation.select_area_or_state'];
     }
     if (!values.emails) {
-        errors.emails = ['You must supply a list of emails to invite!']
+        errors.emails = ['hdyf.validation.invite_user_missing_email']
     }
     return errors;
 };
@@ -36,10 +36,10 @@ const InviteUser = ({ staticContext, ...props }) => {
             {...props}
         >
             <SimpleForm validate={validateArea} toolbar={<InviteUserToolbar />}>
-                <ReferenceInput label="Area" source="area" reference="areas" allowEmpty>
+                <ReferenceInput label="Area" source="area" reference="areas" allowEmpty sort={{ field: 'name', order: 'ASC' }}>
                     <SelectInput optionText="name" />
                 </ReferenceInput>
-                <ReferenceInput label="State" source="state" reference="states" allowEmpty>
+                <ReferenceInput label="State" source="state" reference="states" allowEmpty sort={{ field: 'name', order: 'ASC' }}>
                     <SelectInput optionText="name" />
                 </ReferenceInput>
                 {/*<ReferenceInput label="Country" source="country" reference="countries" allowEmpty>

@@ -3,8 +3,8 @@ import {Show, Create, List, Edit, ReferenceField, TextField, ReferenceManyField,
     DateField, useInput
 } from "react-admin";
 import {useFormState} from "react-final-form";
-import React, { useState, useEffect } from "react";
-import { InstructionContentField } from "../Components/InstructionContent";
+import React, { useState, useEffect, useRef } from "react";
+import { InstructionContentField } from "../Components/InstructionContentField";
 import RichTextInput from 'ra-input-rich-text';
 import {fetchUserGeoEntities, isAdmin} from "../utils";
 import {languageOptions, getUnusedLanguage} from "../language"
@@ -70,19 +70,27 @@ const severityOptions = [
 const validateLocation = (values) => {
     const errors = {};
     if (!values.area && !values.state && !values.country ) {
-        errors.area = ['You must select Country, Area or State!'];
+        errors.area = ['hdyf.validation.select_geolocation'];
     }
     return errors;
 };
 
-const CountrySelector = props => {
-    const {allowedCountries} = props;
-    if(!allowedCountries.length) return null;
-    return (
-        <ReferenceInput label="Country" source="country" reference="countries" filter={{ id: allowedCountries}}>
-            <SelectInput optionText="name" allowEmpty/>
-        </ReferenceInput>
-    )
+const CountrySelector = ({allowedCountries, ...rest}) => {
+    const [choices, setChoices] = useState([]);
+    const dataProvider = useDataProvider();
+    useEffect(() => {
+        if(allowedCountries !== 'all' && allowedCountries.length) {
+            dataProvider.getMany('countries', {ids: allowedCountries}).then(
+                ({data}) => setChoices(data)
+            )
+        } else {
+            dataProvider.getList('countries', {pagination: false, sort: {"name": "asc"}}).then(
+                ({data}) => setChoices(data)
+            )
+        }
+    }, [allowedCountries]);
+    if (!choices.length) return null;
+    return(<SelectInput source="country" choices={choices} translateChoice={false} resettable helperText="hdyf.instructions.country_helper_text" {...rest} />)
 };
 
 const StateSelector = ({allowedStates, ...rest}) => {
@@ -90,57 +98,76 @@ const StateSelector = ({allowedStates, ...rest}) => {
     const {values: {country}} = useFormState();
     const dataProvider = useDataProvider();
     useEffect(() => {
-        if(allowedStates !== 'all' && allowedStates.length) {
-            dataProvider.getMany('states', {ids: allowedStates}).then(
-                ({data}) => setChoices(data)
-            )
+        if(country) { // State is preselected
+            dataProvider.getOne('countries', {id: country})
+                .then(({data: {states}}) => {
+                    // If there's a list of allowed states, then remove any state not on the list, even if it's a part of the selected country
+                    if(allowedStates !== 'all' && allowedStates.length) {
+                        states = states.filter(value => allowedStates.includes(value));
+                    }
+                    dataProvider.getMany('states', {ids: states}).then(
+                        ({data}) => setChoices(data)
+                    )
+                })
+                .catch(error => {})
         } else {
-            if (country) {
-                dataProvider.getOne('countries', {id: country})
-                    .then(({data: {states}}) => {
-                        dataProvider.getMany('states', {ids: states}).then(
-                            ({data}) => setChoices(data)
-                        )
-                    })
-                    .catch(error => {})
-            } else {
+            if(allowedStates === 'all') {
                 dataProvider.getList('states', {pagination: false, sort: {"name":"asc"}}).then(
                     ({data}) => setChoices(data)
                 )
+            } else {
+                if(allowedStates.length) {
+                    dataProvider.getMany('states', {ids: allowedStates}).then(
+                        ({data}) => setChoices(data)
+                    )
+                }
             }
         }
     }, [country, allowedStates]);
     if (!choices.length) return null;
-    return(<SelectInput choices={choices} {...rest} />)
+    return(
+        <SelectInput source="state" choices={choices}
+                     translateChoice={false} resettable
+                     helperText="hdyf.instructions.state_helper_text"
+                     {...rest} />
+        )
 };
 
-const AreaSelector = ({allowedAreas, ...rest}) => {
+const AreaSelector = (props) => {
+    const {allowedAreas, ...rest} = props;
     const [choices, setChoices] = useState([]);
     const { values: {state} } = useFormState();
     const dataProvider = useDataProvider();
     useEffect(() => {
-        if(allowedAreas !== 'all' && !allowedAreas.length) {
-            dataProvider.getMany('areas', {ids: allowedAreas}).then(
-                ({data}) => setChoices(data)
-            )
+        if(state) { // State is preselected
+            dataProvider.getOne('states', {id: state})
+                .then(({data: {areas}}) => {
+                    // If there's a list of allowed areas, then remove any area not on the list, even if it's a part of the selected state
+                    if(allowedAreas !== 'all' && allowedAreas.length) {
+                        areas = areas.filter(value => allowedAreas.includes(value));
+                    }
+                    dataProvider.getMany('areas', {ids: areas}).then(
+                        ({data}) => setChoices(data)
+                    )
+                })
+                .catch(error => {})
         } else {
-            if (state) {
-                dataProvider.getOne('states', {id: state})
-                    .then(({data: {areas}}) => {
-                        dataProvider.getMany('areas', {ids: areas}).then(
-                            ({data}) => setChoices(data)
-                        )
-                    })
-                    .catch(error => {})
-            } else {
-                dataProvider.getList('areas', {pagination: false, sort: {"name":"asc"}}).then(
+            if(allowedAreas === 'all') {
+                dataProvider.getList('areas', {pagination: false, sort: {"name": "asc"}}).then(
                     ({data}) => setChoices(data)
                 )
+            } else {
+                if(allowedAreas.length) {
+                    dataProvider.getMany('areas', {ids: allowedAreas}).then(
+                        ({data}) => setChoices(data)
+                    )
+                }
             }
         }
     }, [state, allowedAreas]);
+    //useTraceUpdate(props);
     if(!choices.length) return null;
-    return(<SelectInput choices={choices} {...rest} />)
+    return(<SelectInput source="area" choices={choices} translateChoice={false} resettable helperText="hdyf.instructions.area_helper_text" {...rest} />)
 };
 
 const styles = {
@@ -149,6 +176,9 @@ const styles = {
     },
     formDiv: {
         flexGrow: 1
+    },
+    select: {
+        width: '50% !important'
     },
     contents: {
         width: '100% !important'
@@ -170,29 +200,21 @@ export const InstructionsCreate = ({ permissions, ...props }) => {
         <div className={classes.editWithHelpSidebar}>
             <Create className={classes.formDiv} {...props}>
                 <SimpleForm redirect="list" validate={validateLocation} initialValues={initialValues}>
-                    {admin ?
-                        <ReferenceInput label="Country" source="country" reference="countries">
-                            <SelectInput optionText="name" allowEmpty/>
-                        </ReferenceInput>
-                        :
-                        <CountrySelector allowedCountries={countries}/>
+                    {(admin || countries.length > 1) &&
+                        <CountrySelector className={classes.select} allowedCountries={admin ? "all" : countries} allowEmpty/>
                     }
-                    {admin ?
-                        <StateSelector source="state" allowedStates="all"/>
-                        :
-                        states.length > 1 ? <StateSelector source="state" allowedStates={states}/> : null
+                    {(admin || states.length > 1) &&
+                        <StateSelector className={classes.select} allowedStates={admin ? "all" : states} allowEmpty/>
                     }
-                    {admin ?
-                        <AreaSelector source="area" allowedAreas="all"/>
-                        :
-                        areas.length > 1 ? <AreaSelector source="area" allowedAreas={areas}/> : null
+                    {(admin || areas.length > 1) &&
+                        <AreaSelector className={classes.select} allowedAreas={admin ? "all" : areas} allowEmpty/>
                     }
-                    <TextInput source="zipcode"/>
-                    <SelectInput source="severity" choices={severityOptions} validate={required()}/>
-                    <InstructionContent className={classes.contents} source="contents" />
+                    <TextInput source="zipcode" resettable helperText="hdyf.instructions.zipcode_helper_text"/>
+                    <SelectInput source="severity" choices={severityOptions} validate={required()} helperText="hdyf.instructions.severity_helper_text"/>
+                    <InstructionContent className={classes.contents} source="contents" label="Instruction contents" />
                 </SimpleForm>
             </Create>
-            <HdyfHelpSidebar helpSection="instructions"/>
+            {/*<HdyfHelpSidebar helpSection="instructions"/>*/}
         </div>
     )};
 
@@ -204,29 +226,21 @@ export const InstructionsEdit = ({ permissions, ...props }) => {
         <div className={classes.editWithHelpSidebar}>
             <Edit className={classes.formDiv} {...props} >
                 <SimpleForm redirect="list" validate={validateLocation}>
-                    {admin ?
-                        <ReferenceInput label="Country" source="country" reference="countries">
-                            <SelectInput optionText="name" allowEmpty/>
-                        </ReferenceInput>
-                        :
-                        <CountrySelector allowedCountries={countries}/>
+                    {(admin || countries.length > 1) &&
+                    <CountrySelector className={classes.select} allowedCountries={admin ? "all" : countries} allowEmpty/>
                     }
-                    {admin ?
-                        <StateSelector source="state" allowedStates="all"/>
-                        :
-                        states.length > 1 ? <StateSelector source="state" allowedStates={states}/> : null
+                    {(admin || states.length > 1) &&
+                    <StateSelector className={classes.select} allowedStates={admin ? "all" : states} allowEmpty/>
                     }
-                    {admin ?
-                        <AreaSelector source="area" allowedAreas="all"/>
-                        :
-                        areas.length > 1 ? <AreaSelector source="area" allowedAreas={areas}/> : null
+                    {(admin || areas.length > 1) &&
+                    <AreaSelector className={classes.select} allowedAreas={admin ? "all" : areas} allowEmpty/>
                     }
-                    <TextInput source="zipcode"/>
-                    <SelectInput source="severity" choices={severityOptions} validate={required()}/>
+                    <TextInput source="zipcode" resettable helperText="hdyf.instructions.zipcode_helper_text"/>
+                    <SelectInput source="severity" choices={severityOptions} validate={required()} helperText="hdyf.instructions.severity_helper_text"/>
                     <InstructionContent className={classes.contents} source="contents" />
                 </SimpleForm>
             </Edit>
-            <HdyfHelpSidebar helpSection="instructions" />
+            {/*<HdyfHelpSidebar helpSection="instructions" />*/}
         </div>
     )
 };
@@ -287,4 +301,20 @@ const TranslatingInput = (props) => {
         }
     }, [contents]);
     return (<RichTextInput {...props}/>)
+}
+
+function useTraceUpdate(props) {
+    const prev = useRef(props);
+    useEffect(() => {
+        const changedProps = Object.entries(props).reduce((ps, [k, v]) => {
+            if (prev.current[k] !== v) {
+                ps[k] = [prev.current[k], v];
+            }
+            return ps;
+        }, {});
+        if (Object.keys(changedProps).length > 0) {
+            console.log('Changed props:', changedProps);
+        }
+        prev.current = props;
+    });
 }
