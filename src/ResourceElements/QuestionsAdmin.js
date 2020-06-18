@@ -1,7 +1,9 @@
 import React from "react";
-import {SelectInput, ReferenceArrayInput, SelectArrayInput, List, Datagrid, TextField, Show, SimpleShowLayout, Create, SimpleForm, Edit, NumberInput,
-    BooleanInput, ArrayInput, SimpleFormIterator, required, ShowButton, EditButton, ReferenceField, FormDataConsumer, TextInput} from "react-admin";
+import {SelectInput, List, Datagrid, TextField, Show, SimpleShowLayout, Create, SimpleForm, Edit, NumberInput,
+    BooleanInput, ArrayInput, SimpleFormIterator, required, ShowButton, EditButton, FormDataConsumer, TextInput} from "react-admin";
 import {languageOptions, getUnusedLanguage} from "../language"
+import {makeStyles} from '@material-ui/core';
+import {useFormState} from "react-final-form";
 
 
 export const QuestionsList = props => (
@@ -34,18 +36,31 @@ const inputChoices = [
     { id: 'entry', name: 'Entry' },
 ];
 
-export const QuestionCreate = props => (
+const styles = {
+    editWithHelpSidebar: {
+        display: "flex"
+    },
+    formDiv: {
+        flexGrow: 1
+    },
+    select: {
+        width: '50% !important'
+    },
+    contents: {
+        width: '100% !important'
+    }
+}
+const useStyles = makeStyles(styles);
+
+export const QuestionCreate = props => {
+    const classes = useStyles();
+    return(
     <Create {...props}>
         <SimpleForm redirect="list">
             <NumberInput source="questionWeight" />
             <SelectInput source="type" choices={inputChoices} />
             <TextInput source="description" />
-            <ArrayInput source="labels">
-                <SimpleFormIterator>
-                    <SelectInput label="Language" source="language" choices={languageOptions} validate={required()} />
-                    <TextInput label="Label" source="label" />
-                </SimpleFormIterator>
-            </ArrayInput>
+            <QuestionLabels className={classes.contents} source="labels" />
             <BooleanInput source="required" />
             <BooleanInput source="requiresAdditionalData" />
             <FormDataConsumer>
@@ -53,43 +68,26 @@ export const QuestionCreate = props => (
                     <SelectInput source="additionalDataType" choices={inputChoices} {...rest} />
                 }
             </FormDataConsumer>
-            <FormDataConsumer>
+            <FormDataConsumer className={classes.contents}>
                 {({formData, ...rest}) => formData.requiresAdditionalData &&
-                    <ArrayInput source="additionalDataLabels" {...rest}>
-                        <SimpleFormIterator>
-                            <SelectInput label="Language" source="language" choices={languageOptions}
-                                         validate={required()}/>
-                            <TextInput label="Label" source="label"/>
-                        </SimpleFormIterator>
-                    </ArrayInput>
+                    <QuestionLabels className={classes.contents} source="additionalDataLabels" {...rest} />
                 }
             </FormDataConsumer>
             <BooleanInput source="disabled" />
         </SimpleForm>
     </Create>
 )
+}
 
-export const QuestionEdit = props => (
+export const QuestionEdit = props => {
+    const classes = useStyles();
+    return(
     <Edit {...props}>
         <SimpleForm redirect="list">
             <NumberInput source="questionWeight" />
             <SelectInput source="type" choices={inputChoices} />
             <TextInput source="description" />
-            <FormDataConsumer>
-                {({formData, ...rest}) =>
-                    <ArrayInput source="labels" {...rest}>
-                        <SimpleFormIterator disableAdd={formData.labels.length >= languageOptions.length}>
-                            <SelectInput label="Language"
-                                         source="language"
-                                         choices={languageOptions}
-                                         defaultValue={getUnusedLanguage(formData.labels.map(item => item ? item.language : null))}
-                                         validate={required()}
-                            />
-                            <TextInput label="Label" source="label" />
-                        </SimpleFormIterator>
-                    </ArrayInput>
-                }
-            </FormDataConsumer>
+            <QuestionLabels className={classes.contents} source="labels" />
             <BooleanInput source="required" />
             <BooleanInput source="requiresAdditionalData" />
             <FormDataConsumer>
@@ -97,21 +95,31 @@ export const QuestionEdit = props => (
                     <SelectInput source="additionalDataType" choices={inputChoices} {...rest} />
                 }
             </FormDataConsumer>
-            <FormDataConsumer>
+            <FormDataConsumer className={classes.contents}>
                 {({formData, ...rest}) => formData.requiresAdditionalData &&
-                    <ArrayInput source="additionalDataLabels" {...rest}>
-                        <SimpleFormIterator disableAdd={formData.additionalDataLabels.length >= languageOptions.length}>
-                            <SelectInput label="Language"
-                                         source="language"
-                                         choices={languageOptions}
-                                         defaultValue={getUnusedLanguage(formData.additionalDataLabels.map(item => item ? item.language : null))}
-                                         validate={required()}/>
-                            <TextInput label="Label" source="label"/>
-                        </SimpleFormIterator>
-                    </ArrayInput>
+                    <QuestionLabels className={classes.contents} source="additionalDataLabels" {...rest} />
                 }
             </FormDataConsumer>
             <BooleanInput source="disabled" />
         </SimpleForm>
     </Edit>
-)
+)}
+
+const QuestionLabels = ({source, ...rest}) => {
+    const {values} = useFormState();
+    const labels = values[source] ?? [];
+    const classes = useStyles();
+    return (
+        <ArrayInput source={source} {...rest}>
+            <SimpleFormIterator disableAdd={labels.length >= languageOptions.length}>
+                <SelectInput label="Language"
+                             source="language"
+                             choices={languageOptions}
+                             validate={required()}
+                             defaultValue={getUnusedLanguage(labels.map(item => item ? item.language : null))}
+                />
+                <TextInput className={classes.contents} label="Label" source="label" />
+            </SimpleFormIterator>
+        </ArrayInput>
+    )
+}
