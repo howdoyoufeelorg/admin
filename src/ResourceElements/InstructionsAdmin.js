@@ -72,7 +72,7 @@ const CountrySelector = ({allowedCountries, ...rest}) => {
                 ({data}) => setChoices(data)
             )
         } else {
-            dataProvider.getList('countries', {pagination: false, sort: {"name": "asc"}}).then(
+            dataProvider.getList('countries', {pagination: {}, sort: {"name": "asc"}}).then(
                 ({data}) => setChoices(data)
             )
         }
@@ -100,7 +100,7 @@ const StateSelector = ({allowedStates, ...rest}) => {
                 .catch(error => {})
         } else {
             if(allowedStates === 'all') {
-                dataProvider.getList('states', {pagination: false, sort: {"name":"asc"}}).then(
+                dataProvider.getList('states', {pagination: {}, sort: {"name":"asc"}}).then(
                     ({data}) => setChoices(data)
                 )
             } else {

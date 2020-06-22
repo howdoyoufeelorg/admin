@@ -217,13 +217,20 @@ export default (
             case GET_LIST:
             case GET_MANY_REFERENCE: {
                 const {
-                    pagination: { page, perPage },
+                    pagination,
                     sort: { field, order },
                 } = params;
 
                 if (order) collectionUrl.searchParams.set(`order[${field}]`, order);
-                if (page) collectionUrl.searchParams.set('page', page);
-                if (perPage) collectionUrl.searchParams.set('perPage', perPage);
+
+                if(pagination) {
+                    const {page, perPage} = pagination;
+                    if (page) collectionUrl.searchParams.set('page', page);
+                    if (perPage) collectionUrl.searchParams.set('perPage', perPage);
+                } else {
+                    collectionUrl.searchParams.set('pagination', 'false')
+                }
+
                 if (params.filter) {
                     const buildFilterParams = (key, nestedFilter, rootKey) => {
                         const filterValue = nestedFilter[key];
