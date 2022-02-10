@@ -17,7 +17,7 @@
     "fibers": "^4.0.2",
     "immutable": "^4.0.0-rc.12",
     "jwt-decode": "^2.2.0",
-    "node-sass": "^4.13.1",
+    "node-sass": "^7.0.0",
     "ra-input-rich-text": "^3.3.1",
     "ra-language-spanish": "^1.0.0",
     "react": "^16.13.0",
