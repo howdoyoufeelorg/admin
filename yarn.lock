@@ -4074,6 +4074,11 @@ domhandler@^2.3.0:
   dependencies:
     domelementtype "1"
 
+dompurify@^2.4.3:
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.4.5.tgz#0e89a27601f0bad978f9a924e7a05d5d2cccdd87"
+  integrity sha512-jggCCd+8Iqp4Tsz0nIvpcb22InKEBrGz5dw3EQJMs8HPJDsKbFIO3STYtAvCfDx26Muevn1MHVI0XxjgFfmiSA==
+
 domutils@1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/domutils/-/domutils-1.5.1.tgz#dcd8488a26f563d61079e48c9f7b7e32373682cf"
@@ -5754,6 +5759,11 @@ inflection@~1.12.0:
   version "1.12.0"
   resolved "https://registry.yarnpkg.com/inflection/-/inflection-1.12.0.tgz#a200935656d6f5f6bc4dc7502e1aecb703228416"
   integrity sha1-ogCTVlbW9fa8TcdQLhrstwMihBY=
+
+inflection@~1.13.1:
+  version "1.13.4"
+  resolved "https://registry.yarnpkg.com/inflection/-/inflection-1.13.4.tgz#65aa696c4e2da6225b148d7a154c449366633a32"
+  integrity sha512-6I/HUDeYFfuNCVS3td055BaXBwKYuzw7K3ExVMStBowKo9oOAMJIXIHvdyR3iboTCp1b+1i5DSkIZTcwIktuDw==
 
 inflight@^1.0.4:
   version "1.0.6"
@@ -9417,23 +9427,23 @@ ra-language-spanish@^1.0.0:
   integrity sha512-hdsW0DtE9foDVMkct3kyLdm8sKgwFFKeqBJ9bxOz3T7qtPAXljxOIgSmvSEjx3bKS0xfUkHX8kt3wvB+Q7fyIg==
 
 ra-ui-materialui@^3.4.1:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/ra-ui-materialui/-/ra-ui-materialui-3.4.1.tgz#72a08cfc3fade7bc244438ae96a31c33fb0b3fa0"
-  integrity sha512-QjUUb40tkPTC4pzBXpLjnIPf0S9zEsc5HxZulH9J/HLkhG+Q2sPQ8kWISccg9LjbVfk4DDLa8m60EYm/w1SV0A==
+  version "3.19.12"
+  resolved "https://registry.yarnpkg.com/ra-ui-materialui/-/ra-ui-materialui-3.19.12.tgz#4a6f54741aab52bca42d6cee6f9c8339c93126f3"
+  integrity sha512-8Zz88r5yprmUxOw9/F0A/kjjVmFMb2n+sjpel8fuOWtS6y++JWonDsvTwo4yIuSF9mC0fht3f/hd2KEHQdmj6Q==
   dependencies:
     autosuggest-highlight "^3.1.1"
     classnames "~2.2.5"
     connected-react-router "^6.5.2"
     css-mediaquery "^0.1.2"
+    dompurify "^2.4.3"
     downshift "3.2.7"
-    inflection "~1.12.0"
+    inflection "~1.13.1"
     jsonexport "^2.4.1"
     lodash "~4.17.5"
     prop-types "^15.7.0"
     query-string "^5.1.1"
     react-dropzone "^10.1.7"
-    react-transition-group "^4.3.0"
-    recompose "~0.26.0"
+    react-transition-group "^4.4.1"
 
 raf@^3.4.1:
   version "3.4.1"
@@ -9693,6 +9703,16 @@ react-transition-group@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-4.3.0.tgz#fea832e386cf8796c58b61874a3319704f5ce683"
   integrity sha512-1qRV1ZuVSdxPlPf4O8t7inxUGpdyO5zG9IoNfJxSO0ImU2A1YWkEQvFPuIPZmMLkg5hYs7vv5mMOyfgSkvAwvw==
+  dependencies:
+    "@babel/runtime" "^7.5.5"
+    dom-helpers "^5.0.1"
+    loose-envify "^1.4.0"
+    prop-types "^15.6.2"
+
+react-transition-group@^4.4.1:
+  version "4.4.5"
+  resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-4.4.5.tgz#e53d4e3f3344da8521489fbef8f2581d42becdd1"
+  integrity sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==
   dependencies:
     "@babel/runtime" "^7.5.5"
     dom-helpers "^5.0.1"
